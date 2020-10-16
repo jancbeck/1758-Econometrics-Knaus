@@ -47,22 +47,22 @@ plot(x = income,
 
 
 ```
-In this scatter plot on the x-axis we see the income per houshold. On the y-axis we see the foodexpenditure per houshold. The unit for both variables is 1 franc per value. We can see that there is a positive correlation between houlshold income and food expenditure. The more income a houshold has the more is spend on food in general. However, we can observe that there exists a certain threshold for food expenditure even with the highest income. Additionally, there are some outliers with an income of 4957.8 and food expenditure of 1827.2. The next outlier has food expenditure of 2032.7 but only an income of 2822.5. The third one has approximately an income of 2600 and food expenditure of 900.
+In this scatter plot on the x-axis we see the income per houshold. On the y-axis we see the foodexpenditure per houshold. The unit for both variables is 1 franc per value. We can see that there is a positive correlation between houlshold income and food expenditure. The more income a houshold has the more is spent on food in general. However, we can observe that there exists a certain threshold for food expenditure even with the highest income at about 2000 franc. Additionally, there are some outliers with an income of 4957.8 and food expenditure of only 1827.2. Another outlier has an income of approximately 2600 and food expenditure of 900. We generally have less observations for higher income households than lower ones.
 
 
 ### 1.2 
 
 ```{r pressure, echo=FALSE}
-log_food_exp <- 100*diff(log(food_exp))
-log_income <- 100*diff(log(income))
+log_food_exp <- log(food_exp)
+log_income <- log(income)
 
 plot(x = log_income,
      y = log_food_exp,
-     main ="lol-log plot",
+     main ="log-log plot",
      )
 
 ```
-+++ Interpretation fehlt noch
+The graphed correlation looks a lot more linear compared to the previous non-logged one. The outliers are less extreme and most observations crowd around the center of the plot rather than the bottom.
 
 
 ### 1.3
@@ -84,19 +84,20 @@ summary(engelsheet)
 
 
 ```
-
-The last output is the summary of the variables income and foodexp. For each variable we can see different key information such as Min and Max values.
+The last output is the summary of the variables income and foodexp. For each variable we can see different key information such as Min and Max values. 
 
 
 ### 1.4 Linear regression Model 1
 
 ```{r, echo=FALSE}
 reg1 <- lm(food_exp ~ income) #lineare regression mit standardvariablen
+m1_B0 <- as.vector(coef(reg1)[1]) # intercept
+m1_B1 <- as.vector(coef(reg1)[2]) # beta1hat
 
 summary(reg1)
 
 ```
-The summary of the linear regression of Model 1, where food expenditure is the dependent variable and household income is the explanatory variable shows us that the estimate for the intercept $\hat{\beta}_{0}$ is 147.47539 and for the slope $\hat{\beta}_{1}$ it is 0.48518. Because $\hat{\beta}_{1}$ > 0, changes of X and Y go into the same direction.
+The summary of the linear regression of Model 1, where food expenditure is the dependent variable and household income is the explanatory variable, shows us that the estimate for the intercept $\hat{\beta}_{0}$ is __`r m1_B0`__ and for the slope $\hat{\beta}_{1}$ it is __`r m1_B1`__. Because $\hat{\beta}_{1}$ > 0, changes of X and Y go into the same direction. 
 
 ### 1.5
 
@@ -106,21 +107,23 @@ The summary of the linear regression of Model 1, where food expenditure is the d
 
 
 ```
-We can see that the slope $\hat{\beta}_{1}$ is 0.48518 and therefore positive. This indicates that when the value of the independent variable (income) increases, the mean of the dependent variable (food expenditure) also tends to increase. Explicitly, when the income increases one unit (1 franc per value) then the food expenditure increases 0.48518 units (mean). -----------+++++ Not sure if the last sentence is correct??? +++++
+According to the estimates of Model 2, food expenditure is expected to increase by 0.49 franc for every additional franc of income.
 
 
 ### 1.6 Linear regression Model 2
-
 
 ```{r, echo=FALSE}
 
 reg2 <- lm(log_food_exp ~ log_income) #lineare regression mit "log variablen"
 
+m2_B0 <- as.vector(coef(reg2)[1]) # intercept
+m2_B1 <- as.vector(coef(reg2)[2]) # beta1hat
+
 summary(reg2)
 
 
 ```
-The summary of the linear regression of Model 2, where food expenditure is the dependent variable and household income is the explanatory variable shows us that the estimate for the intercept $\hat{\beta}_{0}$ is 0.12832 and for the slope $\hat{\beta}_{1}$ it is 0.84020.
+The summary of the linear regression of Model 2, where logged food expenditure is the dependent variable and logged household income is the explanatory variable shows us that the estimate for the intercept $\hat{\beta}_{0}$ is __`r m2_B0`__ and for the slope $\hat{\beta}_{1}$ it is __`r m2_B1`__.
 
 
 ### 1.7
@@ -129,31 +132,21 @@ The summary of the linear regression of Model 2, where food expenditure is the d
 
 
 ```
-The interpretation of the results of the linear regression using log transformation is different than in 1.6. In this case we can describe that $\hat{\beta}_{0}$ changes by 0.12832 (12.832 %) if $\hat{\beta}_{1}$ changes by 0.84020 (84.02 %). Because $\hat{\beta}_{1}$ > 0, changes of X and Y go into the same direction. The important difference besides the value is the unit of change. For a linear regression with log transformation of the independent and dependent variables it is an expected percentage change in Y when X increases by some percentage. Whereas in 1.5 the unit of change is 1 franc per value. ----------- ++++ not sure if correct ++++
+According to Model 2, we can say that for every percentage increase of income, food expenditure is expected to increase by _0.84%_.
 
 
 ### 1.8
 
 ```{r, echo=FALSE}
 
-income1 <- 10000
-m1_B0 <- 147.47539 # Beta 0 von model1 etc..
-m1_B1 <- 0.48518
-m2_B0 <- 0.12832
-m2_B1 <- 0.84020
-
-
-
-exp_foodexp1 <- m1_B0 + m1_B1*income1
-#exp_foodexp2 
+pred_foodexp1 <- m1_B0 + m1_B1 * 10000
+pred_foodexp2 <-m2_B0 + m2_B1 * 10000
 
 ```
 
-For model1 $\hat{\beta}_{0}$ is 147.47539 and $\hat{\beta}_{1}$ is 0.48518. The formula for model1 is: $$Y = {\beta}_{0} + {\beta}_{1}X + u, \,\, \mathbb{E}[u|Y] = 0  $$ If we set  X (income) to 10000 we get an expected food expenditure of `r exp_foodexp1` ~ 5000 franc. \
+For model1 $\hat{\beta}_{0}$ is 147.47539 and $\hat{\beta}_{1}$ is 0.48518. The formula for model1 is: $$Y = {\beta}_{0} + {\beta}_{1}X + u, \,\, \mathbb{E}[u|Y] = 0  $$ If we set  X (income) to 10000 we get an expected food expenditure of `r pred_foodexp1` ~ 5000 franc. \
 
 For model2 $\hat{\beta}_{0}$ is 0.12832 and $\hat{\beta}_{1}$ is 0.84020. The formula for model2 is: $$ log(Y) = {\beta}_{0} + {\beta}_{1}log(X) + u, \,\, \mathbb{E}[u|Y] = 0  $$ ------------------ ++++ bin mir nicht sicher was das Ergebnis dann aussagt, wenn man log(Y) mit der Formel und 10000 berechnet. +++
-
-
 
 ## 2 Theory
 
@@ -176,9 +169,12 @@ In this summary we set the dependent variable to X and the explanatory variable 
 
 --------- +++ Bin mir nicht sicher ob ich die Angabe von dem Aufgabe verstehe, in Bezug auf den "Hint".. für was soll das gut sein? Soll man sich da nochmal Gamma1 ausrechnen..
 
+<!-- We have to do another regression -->
 
 
+2.2
 
+<!-- power point doesnt show vice versa. We have to proof both directions -->
 
 
 
