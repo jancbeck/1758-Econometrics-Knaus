@@ -1,0 +1,200 @@
+---
+title: "Case Study 1 - Group 4"
+author:
+- Annika Janson
+- Jan Beck
+- Franz Uchatzi
+date: "18.10.2020"
+output: 
+  pdf_document: default
+  html_document:
+    df.print: paged
+
+header-includes:
+  - \renewcommand{\and}{\\}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1 Data Analysis
+
+```{r, echo=FALSE}
+engelsheet <- read.csv("engel.csv")
+
+
+```
+
+
+### 1.1 
+
+```{r, echo=FALSE}
+
+income <- engelsheet$income
+food_exp <- engelsheet$foodexp
+
+plot(x = income,
+     y = food_exp,
+     xlab="Houshold income", #Beschriftung x-Achse
+     ylab="Houshold food expenditure", #Beschriftung y-Achase
+     main="Scatterplot") #Beschriftung Grafik
+     #abline(lm(y~x), col="red"), #regression line (y~x)
+     #lines(lowess(x,y), col="blue")) # lowess line (x,y)
+      
+
+
+
+```
+In this scatter plot on the x-axis we see the income per houshold. On the y-axis we see the foodexpenditure per houshold. The unit for both variables is 1 franc per value. We can see that there is a positive correlation between houlshold income and food expenditure. The more income a houshold has the more is spend on food in general. However, we can observe that there exists a certain threshold for food expenditure even with the highest income. Additionally, there are some outliers with an income of 4957.8 and food expenditure of 1827.2. The next outlier has food expenditure of 2032.7 but only an income of 2822.5. The third one has approximately an income of 2600 and food expenditure of 900.
+
+
+### 1.2 
+
+```{r pressure, echo=FALSE}
+log_food_exp <- 100*diff(log(food_exp))
+log_income <- 100*diff(log(income))
+
+plot(x = log_income,
+     y = log_food_exp,
+     main ="lol-log plot",
+     )
+
+```
++++ Interpretation fehlt noch
+
+
+### 1.3
+
+```{r, echo=FALSE}
+
+hist(income,
+     xlab="Income per houshold",
+     ylab="Freq",
+     breaks = 50)
+
+hist(food_exp,
+     main="Histogram of food expenditure",
+     xlab="Food expenditure per houshold",
+     ylab="Freq",
+     breaks= 50)
+
+summary(engelsheet)
+
+
+```
+
+The last output is the summary of the variables income and foodexp. For each variable we can see different key information such as Min and Max values.
+
+
+### 1.4 Linear regression Model 1
+
+```{r, echo=FALSE}
+reg1 <- lm(food_exp ~ income) #lineare regression mit standardvariablen
+
+summary(reg1)
+
+```
+The summary of the linear regression of Model 1, where food expenditure is the dependent variable and household income is the explanatory variable shows us that the estimate for the intercept $\hat{\beta}_{0}$ is 147.47539 and for the slope $\hat{\beta}_{1}$ it is 0.48518. Because $\hat{\beta}_{1}$ > 0, changes of X and Y go into the same direction.
+
+### 1.5
+
+```{r, echo=FALSE}
+
+#The y-intercept of a line is the value of y where the line crosses the y-axis. In other words, it is the value of y when the value of x is equal to 0. Sometimes this has true meaning for the model that the line provides, but other times it is meaningless.
+
+
+```
+We can see that the slope $\hat{\beta}_{1}$ is 0.48518 and therefore positive. This indicates that when the value of the independent variable (income) increases, the mean of the dependent variable (food expenditure) also tends to increase. Explicitly, when the income increases one unit (1 franc per value) then the food expenditure increases 0.48518 units (mean). -----------+++++ Not sure if the last sentence is correct??? +++++
+
+
+### 1.6 Linear regression Model 2
+
+
+```{r, echo=FALSE}
+
+reg2 <- lm(log_food_exp ~ log_income) #lineare regression mit "log variablen"
+
+summary(reg2)
+
+
+```
+The summary of the linear regression of Model 2, where food expenditure is the dependent variable and household income is the explanatory variable shows us that the estimate for the intercept $\hat{\beta}_{0}$ is 0.12832 and for the slope $\hat{\beta}_{1}$ it is 0.84020.
+
+
+### 1.7
+
+```{r, echo=FALSE}
+
+
+```
+The interpretation of the results of the linear regression using log transformation is different than in 1.6. In this case we can describe that $\hat{\beta}_{0}$ changes by 0.12832 (12.832 %) if $\hat{\beta}_{1}$ changes by 0.84020 (84.02 %). Because $\hat{\beta}_{1}$ > 0, changes of X and Y go into the same direction. The important difference besides the value is the unit of change. For a linear regression with log transformation of the independent and dependent variables it is an expected percentage change in Y when X increases by some percentage. Whereas in 1.5 the unit of change is 1 franc per value. ----------- ++++ not sure if correct ++++
+
+
+### 1.8
+
+```{r, echo=FALSE}
+
+income1 <- 10000
+m1_B0 <- 147.47539 # Beta 0 von model1 etc..
+m1_B1 <- 0.48518
+m2_B0 <- 0.12832
+m2_B1 <- 0.84020
+
+
+
+exp_foodexp1 <- m1_B0 + m1_B1*income1
+#exp_foodexp2 
+
+```
+
+For model1 $\hat{\beta}_{0}$ is 147.47539 and $\hat{\beta}_{1}$ is 0.48518. The formula for model1 is: $$Y = {\beta}_{0} + {\beta}_{1}X + u, \,\, \mathbb{E}[u|Y] = 0  $$ If we set  X (income) to 10000 we get an expected food expenditure of `r exp_foodexp1` ~ 5000 franc. \
+
+For model2 $\hat{\beta}_{0}$ is 0.12832 and $\hat{\beta}_{1}$ is 0.84020. The formula for model2 is: $$ log(Y) = {\beta}_{0} + {\beta}_{1}log(X) + u, \,\, \mathbb{E}[u|Y] = 0  $$ ------------------ ++++ bin mir nicht sicher was das Ergebnis dann aussagt, wenn man log(Y) mit der Formel und 10000 berechnet. +++
+
+
+
+## 2 Theory
+
+### 2.1 
+
+```{r}
+reg1_2  <- lm(income ~ food_exp) # für 2.1 muss man die dependent varaible Y mit der explanatory variable X vertauschen 
+
+summary(reg1_2)
+
+cov1 <- cov(income, food_exp)  # hab ich unnötig berechnet wie ich später gesehen habe,
+# da Beta1 vom vorherigen Beispiel eh schon gegeben war
+var1 <- var(income)
+beta1 <- (cov1/var1)
+
+print(beta1)
+print(1/beta1)
+```
+In this summary we set the dependent variable to X and the explanatory variable to Y. We can see that $\frac{1}{0.4851784} = 2.061097$ and therefore the argument $\gamma_1 = \frac{1}{\beta_1}$ is false. $\gamma_1 = 1.71146$. 
+
+--------- +++ Bin mir nicht sicher ob ich die Angabe von dem Aufgabe verstehe, in Bezug auf den "Hint".. für was soll das gut sein? Soll man sich da nochmal Gamma1 ausrechnen..
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
