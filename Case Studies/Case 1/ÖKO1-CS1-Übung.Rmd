@@ -5,13 +5,11 @@ author:
 - Jan Beck h11814291
 - Franz Uchatzi
 date: "18.10.2020"
-output: 
+output:
   pdf_document: default
   html_document:
     df.print: paged
-
-header-includes:
-  - \renewcommand{\and}{\\}
+header-includes: \renewcommand{\and}{\\}
 ---
 
 
@@ -109,7 +107,7 @@ The summary of the linear regression of Model 1, where food expenditure is the d
 
 According to the estimates of Model 2, food expenditure is expected to increase by __`r round(m1_B1, 2)`__ franc for every additional franc of income.
 
-
+\newpage
 ### 1.6 Linear regression Model 2
 
 ```{r, echo=FALSE}
@@ -145,35 +143,55 @@ According to Model 1 the expected food expenditure of a household with an income
 
 According to Model 2 the expected food expenditure of a household with an income of 10,000 franc is __`r round(pred_foodexp2, 2)`__ franc.
 
-
+\newpage
 ## 2 Theory
 
 ### 2.1 
 
-```{r}
-reg1_2  <- lm(income ~ food_exp) # für 2.1 muss man die dependent varaible Y mit der explanatory variable X vertauschen 
+Given that 
+
+$$\beta_1 = \frac{Cov(X,Y)}{Var(X)}$$
+
+and 
+
+$$\gamma_1=\frac{Cov(Y,X)}{Var(Y)}$$
+
+The assertion 
+
+$$\gamma_1=\frac{1}{\beta_1}$$
+implies that
+
+$$\frac{Cov(Y,X)}{Var(Y)}=\frac{Var(X)}{Cov(Y,X)}$$
+
+This can not be true because
+
+$$Cov(Y,X)=Cov(X,Y)$$
+
+therefore
+
+$$
+\begin{aligned}
+\frac{Cov(Y,X)}{Var(Y)}&=\frac{Var(X)}{Cov(Y,X)} \\
+Cov(Y,X)^2&= Var(X) *Var(Y) \\
+Cov(Y,X)&= \sqrt{Var(X)} * \sqrt{Var(Y)}
+\end{aligned}
+$$
+
+[Annika, wie beweist man, dass die letzte Zeile oben ein Widerspruch ist?]
+
+\newpage
+We confirm this by running a regression with switched dependent and explanatory variables.  
+
+```{r echo=FALSE}
+
+reg1_2  <- lm(income ~ food_exp) # switch out X an Y variables
+gamma1 <- as.vector(coef(reg1_2)[2])
 
 summary(reg1_2)
 
-cov1 <- cov(income, food_exp)  # hab ich unnötig berechnet wie ich später gesehen habe,
-# da Beta1 vom vorherigen Beispiel eh schon gegeben war
-var1 <- var(income)
-beta1 <- (cov1/var1)
-
-print(beta1)
-print(1/beta1)
 ```
 
-In this summary we set the dependent variable to X and the explanatory variable to Y. We can see that $\frac{1}{0.4851784} = 2.061097$ and therefore the argument $\gamma_1 = \frac{1}{\beta_1}$ is false. $\gamma_1 = 1.71146$. 
-
-
---------- +++ Bin mir nicht sicher ob ich die Angabe von dem Aufgabe verstehe, in Bezug auf den "Hint".. für was soll das gut sein? Soll man sich da nochmal Gamma1 ausrechnen..
-
-<!-- We have to do another regression -->
-
-
-
-
+If $\gamma_1 = \frac{1}{\beta_1}$ was true, then $\hat{\gamma}_{1} = \frac{1}{`r m1_B1`} = `r 1/m1_B1`$ and but $\hat{\gamma}_{1} = `r gamma1`$.
 
 
 ### 2.2
@@ -181,27 +199,31 @@ In this summary we set the dependent variable to X and the explanatory variable 
 
 $I \rightarrow II$
 
+$$
+\begin{aligned}
+y &= \beta_0+\beta_1X+u\,\,\,\,\,\,\,\,\,\,\,\,\ \mathbb{E}[u|X]=0 \\
+\rightarrow u&=y-\beta_0-\beta_1X \\
+\\
+u \rightarrow \mathbb{E}[u|X]&=\mathbb{E}[y-\beta_0-\beta_1X|X] 
+=\mathbb{E}[Y|X]-\mathbb{E}[\beta_0|X]- \mathbb{E}[\beta_1X|X] \\
+0&=\mathbb{E}[Y|X]- \beta_0\mathbb{E}[1|X]- \beta_1\mathbb{E}[X|X] \\
+0&=\mathbb{E}[Y|X]- \beta_0-\beta_1X \\
+\mathbb{E}[Y|X] &= \beta_0 + \beta_1X
+\end{aligned}
+$$
 
-$$y = \beta_0+\beta_1X+u\,\,\,\,\,\,\,\,\,\,\,\,\ \mathbb{E}[u|X]=0\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$\rightarrow u=y-\beta_0-\beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$u \rightarrow \mathbb{E}[u|X]=\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
 
-
-$$=\mathbb{E}[y-\beta_0-\beta1X|X]=\mathbb{E}[Y|X]-\mathbb{E}[\beta_0|X]- \mathbb{E}[\beta_1X|X] $$
-$$0=\mathbb{E}[Y|X]- \beta_0\mathbb{E}[1|X]- \beta_1\mathbb{E}[X|X]\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-
-
-
-$$0=\mathbb{E}[Y|X]- \beta_0-\beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$\mathbb{E}[Y|X] = \beta_0 + \beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
 
 
 
 $II \rightarrow I$
 
+$$
+\begin{aligned}
+\mathbb{E}[Y|X]&=\beta_0 + \beta_1X \\
+\mathbb{E}[\beta_0 + \beta_1X+u|X]&=\beta_0 + \beta_1X \\
+\mathbb{E}[\beta_0|X]+\mathbb{E}[\beta_1X|X]+\mathbb{E}[u|X]&=\beta_0 + \beta_1X \\ \beta_0 + \beta_1X+\mathbb{E}[u|X]&=\beta_0 + \beta_1X \\
+\rightarrow \mathbb{E}[u|X]&=0
+\end{aligned}
+$$
 
-$$\mathbb{E}[Y|X]=\beta_0 + \beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$\mathbb{E}[\beta_0 + \beta_1X+u|X]=\beta_0 + \beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$\mathbb{E}[\beta_0|X]+\mathbb{E}[\beta_1X|X]+\mathbb{E}[u|X]=\beta_0 + \beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$\beta_0 + \beta_1X+\mathbb{E}[u|X]=\beta_0 + \beta_1X\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
-$$\rightarrow \mathbb{E}[u|X]=0\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$$
