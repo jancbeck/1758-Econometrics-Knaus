@@ -1,0 +1,119 @@
+---
+title: "Case Study 2 - Group 4"
+author:
+- Annika Janson h11829506
+- Jan Beck h11814291
+- Franz Uchatzi
+date: "8.11.2020"
+output:
+  pdf_document: default
+  html_document:
+    df.print: paged
+header-includes: \renewcommand{\and}{\\}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+chick <- read.csv("chicken.csv")
+```
+
+## 3 Data Analysis
+
+### 3.1
+
+```{r, echo=FALSE}
+
+price <- chick$pchick
+demand <- chick$consum
+
+plot(x = price,
+     y = demand,
+     xlab="Price", #Beschriftung x-Achse
+     ylab="Demand", #Beschriftung y-Achase
+     main="Scatterplot") #Beschriftung Grafik
+     #abline(lm(y~x), col="red"), #regression line (y~x)
+     #lines(lowess(x,y), col="blue")) # lowess line (x,y)
+      
+
+```
+- positive, but economics theory would suggest a negative correlation
+
+
+### 3.2 
+
+```{r, echo=FALSE}
+reg1 <- lm(log(consum) ~ log(income) + log(pchick) + log(pbeef) + log(ppork), data=chick) # attention logs!
+summary(reg1)
+
+m1_B0 <- as.vector(coef(reg1)[1]) # intercept
+m1_B1 <- as.vector(coef(reg1)[2]) # beta1hat income
+m1_B2 <- as.vector(coef(reg1)[3]) # beta2hat chicken
+m1_B3 <- as.vector(coef(reg1)[4]) # beta3hat beef
+m1_B4 <- as.vector(coef(reg1)[5]) # beta4hat pork
+
+```
+
+
+- result suggest that the higher the price for chicken the lower demand for it (negative correlation)
+- compatible with economic theory
+- extra question: 1) so that we can interpret it as elasticities (% changes) 2) to make the correlation "more linear"
+
+
+### 3.3
+
+- A 1% increase of income leads to a __`r m1_B1`__% change in demand.
+
+
+### 3.4
+
+- A 2% increase of income leads to a __`r 2*m1_B1`__% change in demand.
+
+
+### 3.5
+
+```{r, echo=FALSE}
+
+log_demand <- predict(reg1, data.frame(income=2200, pchick=50, ppork=170, pbeef=312)) 
+
+
+```
+
+- The log demand is __`r log_demand`__ 
+
+- The demand is __`r exp(log_demand)`__ 
+
+### 3.6
+
+```{r, echo=FALSE}
+
+fitted <- fitted(reg1)
+r <- cov(fitted, demand) / (sd(fitted) * sd(demand))
+
+SStot <- sum( (demand - mean(demand)) ^ 2 )
+SSres <- sum( ( demand - fitted )^2)
+
+r2 <- 1 - SSres/SStot
+
+# we can use the regression summary output to check if this is correct
+```
+
+### 3.7
+
+### 3.8
+
+
+\newpage
+## 4 Theory
+
+### 4.1 
+
+$$
+\begin{aligned}
+A^2 + B^2 &= C^2 \\
+A^2 &= C^2 - B^2
+\end{aligned}
+$$
+
+
+### 4.2
