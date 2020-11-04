@@ -7,3 +7,6 @@ info_final.pdf
 Case Studies/Case 2/ÖKO1-CS2-Übung.pdf
 Case Studies/Case 1/case_1_solution.pdf
 .Rproj.user
+*.aux
+*.out
+.Rhistory

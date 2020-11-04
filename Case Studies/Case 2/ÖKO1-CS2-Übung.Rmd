@@ -1,4 +1,4 @@
----TEST
+---
 title: "Case Study 2 - Group 4"
 author:
 - Annika Janson h11829506
@@ -108,6 +108,7 @@ r2 <- 1 - SSres/SStot
 
 ### 4.1 
 
+#### 4.1.1
 $$
 \begin{aligned}
 A^2 + B^2 &= C^2 \\
@@ -115,5 +116,42 @@ A^2 &= C^2 - B^2
 \end{aligned}
 $$
 
+By definition study+ sleep+ work +leisure= 168. Therfore, if we change study we need to change at least one of the other categories so that they still sum up to 168.
+
+#### 4.1.2
+
+This model violates MLR.3 (No Perfect Collinearity). There is a perfect linearity between study, sleep, work and leisure, since study+ sleep +work +leisure= 168, so these variables exhibit perfect multicollinearity. To not violate Assumption MLR.3 it is possible to drop one of the independent variables, so that: 
+$GPA= \beta_1+ \beta_1study+ \beta_2sleep + \beta_3 work +u.$ Now if we increase e.g study by 1, $\beta_1$ is the change in GPA when we increase study by 1 hour but hold sleep, work constant. 
+
+
 
 ### 4.2
+
+To answer this question we look at the components of the equation that define the standard error of the OLS estimators of the coefficient  $\tilde{\beta}_{1}$ and $\hat{\beta}_{j}$ for the simple and multiple regression model respectively:
+
+$$
+\begin{aligned}
+\operatorname{se}(\tilde{\beta}_{1})&=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}(x_{j}) } \\ \\
+\operatorname{se}(\hat{\beta}_{j})&=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}(x_{j}) \sqrt{1-R_{j}^{2}}}
+\end{aligned}
+$$
+This allows us to see that given the same sample and error variance $\sigma^{2}$, the variance of the OLS estimators of the coefficient in the multiple regression model can only ever be equal or larger than that of the simple regression model because of $1-R_{j}^{2}$. 
+"$x_{1}$ is almost uncorrelated" implies a value for $R_{j}^{2}$ that is close to zero. 
+
+Next, we estimate the error variance $\hat{\sigma}^{2}$ by dividing the sum of squared residuals (SSR) by the degrees of freedom (df):
+
+$$
+\begin{aligned}
+\hat{\sigma}^{2} = \frac{\sum\limits_{i=1}^n \hat{u}_{i}^{2}}{(n - k - 1)} = \frac{SSR}{df}
+\end{aligned}
+$$
+
+In the case of the simple regression k=1, therefore in the multiple regression model the denominator has to be smaller and is increasing the error variance (and in turn, standard error). 
+
+However, we know that the OLS residuals are defined by
+
+$$
+\hat{u}_{i}=y_{i}-\hat{\beta}_{0}-\hat{\beta}_{1} x_{i 1}-\hat{\beta}_{2} x_{i 2}-\ldots-\hat{\beta}_{k} x_{i k}
+$$
+
+If "$x_{2}$ and $x_{3}$ have large partial effects on y", then the residuals are likely to be smaller unless the effects of $x_{2}$ and $x_{3}$ are smaller than those of $x_{1}$ alone in the simple regression model. Whether this is enough to outweigh the larger effects the additional parameters we can not say, because we don't know how large $x_{1}$ will be after $x_{2}$ and $x_{3}$ have been included in the model.
