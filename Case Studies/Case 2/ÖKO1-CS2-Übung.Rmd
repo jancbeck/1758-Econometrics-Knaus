@@ -9,12 +9,15 @@ output:
   pdf_document: default
   html_document:
     df.print: paged
-header-includes: \renewcommand{\and}{\\}
+header-includes: 
+ - \usepackage{dcolumn}
+ - \renewcommand{\and}{\\}
 ---
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(stargazer)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 chick <- read.csv("chicken.csv")
 ```
 
@@ -26,6 +29,7 @@ chick <- read.csv("chicken.csv")
 
 price <- chick$pchick
 demand <- chick$consum
+N <- nrow(chick)
 
 plot(x = price,
      y = demand,
@@ -39,18 +43,23 @@ plot(x = price,
 ```
 - positive, but economics theory would suggest a negative correlation
 
-
+\newpage
 ### 3.2 
 
 ```{r, echo=FALSE}
 reg1 <- lm(log(consum) ~ log(income) + log(pchick) + log(pbeef) + log(ppork), data=chick) # attention logs!
-summary(reg1)
+#summary(reg1)
 
 m1_B0 <- as.vector(coef(reg1)[1]) # intercept
 m1_B1 <- as.vector(coef(reg1)[2]) # beta1hat income
 m1_B2 <- as.vector(coef(reg1)[3]) # beta2hat chicken
 m1_B3 <- as.vector(coef(reg1)[4]) # beta3hat beef
 m1_B4 <- as.vector(coef(reg1)[5]) # beta4hat pork
+
+```
+
+```{r, results='asis', echo=FALSE}
+invisible(stargazer(reg1, header=FALSE, type='latex', title="Regression results", align=TRUE))
 
 ```
 
@@ -88,19 +97,78 @@ log_demand <- predict(reg1, data.frame(income=2200, pchick=50, ppork=170, pbeef=
 ```{r, echo=FALSE}
 
 fitted <- fitted(reg1)
-r <- cov(fitted, demand) / (sd(fitted) * sd(demand))
+r <- cov(fitted, log(demand)) / (sd(fitted) * sd(log(demand)))
+                                 
+SSR <- sum((log(demand) - fitted )^2) # or: sum(resid(reg1)^2)
+#SSR == sum(resid(reg1)^2) # not sure why its not the same?
+TSS <- sum((log(demand) - mean(log(demand)))^2)
+#TSS == var(log(demand)) * ( length(demand) - 1) # equals alternate formula: N * var(Y) 
 
-SStot <- sum( (demand - mean(demand)) ^ 2 )
-SSres <- sum( ( demand - fitted )^2)
-
-r2 <- 1 - SSres/SStot
-
-# we can use the regression summary output to check if this is correct
+r2 <- 1 - SSR/TSS
+#r2 == summary(reg1)$r.squared  # compare our result with regression output
+ 
 ```
+
+- The correlation R is __`r r`__
+- The coefficient of determination is __`r r2`__
+
 
 ### 3.7
 
+#### i)
+```{r, echo=FALSE}
+
+biased_residVar <- SSR / ( N - 1 ) # sum of squared residuals / N-1 
+#biased_residVar == var(resid(reg1)) # not sure why its not the same?
+
+```
+
+- The biased estimator of the variance of the residuals is __`r format(round(biased_residVar, 11), nsmall = 11)`__
+
+#### ii)
+
+```{r, echo=FALSE}
+
+K <- length( reg1$coefficients ) - 1 # number of predictor variables X1, . . . , XK.
+unbiased_residVar <- SSR / ( N - K - 1 ) # SSR/(N-K-1)
+
+```
+
+- The unbiased estimator of the error variance $\hat\sigma^2$ is __`r format(round(unbiased_residVar, 11), nsmall = 11)`__
+
+#### iii)
+
+```{r, results='asis', echo=FALSE}
+
+invisible(stargazer(vcov(reg1), header=FALSE, align=TRUE, title="Covariance Matrix"))
+
+```
+
 ### 3.8
+```{r, echo=FALSE}
+
+model2 <- lm(log(consum) ~ log(income), data=chick)
+#summary(model2)
+m2_B1 <- as.vector(coef(model2)[2])
+
+
+model3 <- lm(log(consum) ~ log(pchick), data=chick)
+#summary(model3)
+m3_B1 <- as.vector(coef(model3)[2])
+
+
+```
+
+```{r, results='asis', echo=FALSE}
+
+invisible(stargazer(model2, model3, header=FALSE, align=TRUE, title="Regression results"))
+
+```
+
+- $\hat{\beta}_{1}$ is __`r m1_B1`__ and $\hat{\alpha}_{1}$ is __`r m2_B1`__.
+
+- $\hat{\beta}_{2}$ is __`r m1_B2`__ and $\hat{\alpha}_{2}$ is __`r m3_B1`__.
+
 
 
 \newpage
@@ -109,12 +177,6 @@ r2 <- 1 - SSres/SStot
 ### 4.1 
 
 #### 4.1.1
-$$
-\begin{aligned}
-A^2 + B^2 &= C^2 \\
-A^2 &= C^2 - B^2
-\end{aligned}
-$$
 
 By definition study+ sleep+ work +leisure= 168. Therfore, if we change study we need to change at least one of the other categories so that they still sum up to 168.
 
