@@ -17,6 +17,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 library(stargazer)
+library(extrafont)
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 chick <- read.csv("chicken.csv")
 ```
@@ -29,7 +30,6 @@ chick <- read.csv("chicken.csv")
 
 price <- chick$pchick
 demand <- chick$consum
-N <- nrow(chick)
 
 plot(x = price,
      y = demand,
@@ -38,169 +38,123 @@ plot(x = price,
      main="Scatterplot") #Beschriftung Grafik
      #abline(lm(y~x), col="red"), #regression line (y~x)
      #lines(lowess(x,y), col="blue")) # lowess line (x,y)
-      
 
 ```
-- positive, but economics theory would suggest a negative correlation
+We observe a __positive__ relationship between price of chicken and demand for chicken. This is contrary to the fundamental economic principle of *law of demand* which states that "conditional on all else being equal, as the price of a good increases (↑), quantity demanded will decrease (↓); conversely, as the price of a good decreases (↓), quantity demanded will increase (↑)" (Nicholson, Snyder, 2012). In other words, we would expect to see a negative relationship.
 
 \newpage
 ### 3.2 
 
 ```{r, echo=FALSE}
-reg1 <- lm(log(consum) ~ log(income) + log(pchick) + log(pbeef) + log(ppork), data=chick) # attention logs!
-#summary(reg1)
+model1 <- lm(log(consum) ~ log(income) + log(pchick) + log(pbeef) + log(ppork), data=chick) # attention logs!
+#summary(model1)
 
-m1_B0 <- as.vector(coef(reg1)[1]) # intercept
-m1_B1 <- as.vector(coef(reg1)[2]) # beta1hat income
-m1_B2 <- as.vector(coef(reg1)[3]) # beta2hat chicken
-m1_B3 <- as.vector(coef(reg1)[4]) # beta3hat beef
-m1_B4 <- as.vector(coef(reg1)[5]) # beta4hat pork
+m1_B0 <- as.vector(coef(model1)[1]) # intercept
+m1_B1 <- as.vector(coef(model1)[2]) # beta1hat income
+m1_B2 <- as.vector(coef(model1)[3]) # beta2hat chicken
+m1_B3 <- as.vector(coef(model1)[4]) # beta3hat beef
+m1_B4 <- as.vector(coef(model1)[5]) # beta4hat pork
 
 ```
 
 ```{r, results='asis', echo=FALSE}
-invisible(stargazer(reg1, header=FALSE, type='latex', title="Regression results", align=TRUE))
+invisible(stargazer(model1, header=FALSE, type='latex', title="Model 1 regression results", align=TRUE))
 
 ```
 
+The result suggests that if we hold all else equal, the higher the price for chicken the lower demand for it (__negative__ correlation). This is compatible with what economic theory suggests. 
 
-- result suggest that the higher the price for chicken the lower demand for it (negative correlation)
-- compatible with economic theory
-- extra question: 1) so that we can interpret it as elasticities (% changes) 2) to make the correlation "more linear"
+We might consider a log-log model so that we can interpret the coefficients as elasticities (percentage changes).  Ceteris paribus a one percent increase in the price of chicken leads to a __`r m1_B2`__%% decrease in demand for chicken.
 
 
 ### 3.3
 
-- A 1% increase of income leads to a __`r m1_B1`__% change in demand.
+According to the model we expect a 1% increase of income leads to a __`r m1_B1`__% change in demand ceteris paribus.
 
 
 ### 3.4
 
-- A 2% increase of income leads to a __`r 2*m1_B1`__% change in demand.
+According to the model we expect that a 2% increase of income leads to a __`r 2*m1_B1`__% change in demand ceteris paribus.
 
 
 ### 3.5
 
 ```{r, echo=FALSE}
 
-log_demand <- predict(reg1, data.frame(income=2200, pchick=50, ppork=170, pbeef=312)) 
+log_demand <- predict(model1, data.frame(income=2200, pchick=50, ppork=170, pbeef=312)) 
 
 
 ```
 
-- The log demand is __`r log_demand`__ 
-
-- The demand is __`r exp(log_demand)`__ 
+The model predicts a log demand of chicken of __`r log_demand`__ (or __`r exp(log_demand)`__  non-logged).
 
 ### 3.6
 
 ```{r, echo=FALSE}
 
-fitted <- fitted(reg1)
+N <- nrow(chick)
+fitted <- fitted(model1)
 r <- cov(fitted, log(demand)) / (sd(fitted) * sd(log(demand)))
+#cor(fitted, log(demand))
                                  
-SSR <- sum((log(demand) - fitted )^2) # or: sum(resid(reg1)^2)
-#SSR == sum(resid(reg1)^2) # not sure why its not the same?
+SSR <- sum((log(demand) - fitted )^2) # or: sum(resid(model1)^2)
+#SSR == sum(resid(model1)^2) # should be the same
 TSS <- sum((log(demand) - mean(log(demand)))^2)
-#TSS == var(log(demand)) * ( length(demand) - 1) # equals alternate formula: N * var(Y) 
+#TSS == var(log(demand)) * ( N - 1) # equals alternate formula: N * var(Y) 
 
 r2 <- 1 - SSR/TSS
-#r2 == summary(reg1)$r.squared  # compare our result with regression output
+#r2 == summary(model1)$r.squared  # compare our result with regression output
  
 ```
 
-- The correlation R is __`r r`__
-- The coefficient of determination is __`r r2`__
+To obtain the sample correlation $\mathrm{r}$ we compute according to the formula
 
+$$
+r_{x y}=\frac{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)\left(y_{i}-\bar{y}\right)}{\sqrt{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}} \sqrt{\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}}} = \frac{Cov(X,Y)}{\sqrt{Var(X)  Var(Y)}}
+$$
+and get __`r r`__.
+
+To obtain the coefficient of determination $\mathrm{R}^{2}$ we compute according to the formula 
+
+$$
+\mathrm{R}^{2}=\frac{\mathrm{TSS}-\mathrm{SSR}}{\mathrm{TSS}}=1-\frac{\mathrm{SSR}}{\mathrm{TSS}}
+$$
+where
+
+$$
+\mathrm{SSR}=\sum_{i=1}^{N} \hat{u}_{i}^{2} \quad \text{ and } \quad \mathrm{TSS}=\sum_{i=1}^{N}\left(y_{i}-\bar{y}\right)^{2}
+$$
+
+and get __`r r2`__
 
 ### 3.7
 
 #### i)
 ```{r, echo=FALSE}
 
-biased_residVar <- SSR / ( N - 1 ) # sum of squared residuals / N-1 
-#biased_residVar == var(resid(reg1)) # not sure why its not the same?
+biased_residVar <- SSR / N # sum of squared residuals / N-1 
+#biased_residVar == var(resid(model1)) # should be the same
 
 ```
 
-- The biased estimator of the variance of the residuals is __`r format(round(biased_residVar, 11), nsmall = 11)`__
+To obtain a biased estimator of the variance of the residuals we compute according to the naive formula 
+
+$$
+\tilde{\hat{\sigma}}^{2}=\frac{\mathrm{SSR}}{\mathrm{N}}
+$$
+
+and get __`r format(round(biased_residVar, 11), nsmall = 11)`__
 
 #### ii)
 
 ```{r, echo=FALSE}
 
-K <- length( reg1$coefficients ) - 1 # number of predictor variables X1, . . . , XK.
+K <- length( model1$coefficients ) - 1 # number of predictor variables X1, . . . , XK.
 unbiased_residVar <- SSR / ( N - K - 1 ) # SSR/(N-K-1)
 
 ```
 
-- The unbiased estimator of the error variance $\hat\sigma^2$ is __`r format(round(unbiased_residVar, 11), nsmall = 11)`__
-
-#### iii)
-
-```{r, results='asis', echo=FALSE}
-
-invisible(stargazer(vcov(reg1), header=FALSE, align=TRUE, title="Covariance Matrix"))
-
-```
-
-### 3.8
-```{r, echo=FALSE}
-
-model2 <- lm(log(consum) ~ log(income), data=chick)
-#summary(model2)
-m2_B1 <- as.vector(coef(model2)[2])
-
-
-model3 <- lm(log(consum) ~ log(pchick), data=chick)
-#summary(model3)
-m3_B1 <- as.vector(coef(model3)[2])
-
-
-```
-
-```{r, results='asis', echo=FALSE}
-
-invisible(stargazer(model2, model3, header=FALSE, align=TRUE, title="Regression results"))
-
-```
-
-- $\hat{\beta}_{1}$ is __`r m1_B1`__ and $\hat{\alpha}_{1}$ is __`r m2_B1`__.
-
-- $\hat{\beta}_{2}$ is __`r m1_B2`__ and $\hat{\alpha}_{2}$ is __`r m3_B1`__.
-
-
-
-\newpage
-## 4 Theory
-
-### 4.1 
-
-#### 4.1.1
-
-By definition study+ sleep+ work +leisure= 168. Therfore, if we change study we need to change at least one of the other categories so that they still sum up to 168.
-
-#### 4.1.2
-
-This model violates MLR.3 (No Perfect Collinearity). There is a perfect linearity between study, sleep, work and leisure, since study+ sleep +work +leisure= 168, so these variables exhibit perfect multicollinearity. To not violate Assumption MLR.3 it is possible to drop one of the independent variables, so that: 
-$GPA= \beta_1+ \beta_1study+ \beta_2sleep + \beta_3 work +u.$ Now if we increase e.g study by 1, $\beta_1$ is the change in GPA when we increase study by 1 hour but hold sleep, work constant. 
-
-
-
-### 4.2
-
-To answer this question we look at the components of the equation that define the standard error of the OLS estimators of the coefficient  $\tilde{\beta}_{1}$ and $\hat{\beta}_{j}$ for the simple and multiple regression model respectively:
-
-$$
-\begin{aligned}
-\operatorname{se}(\tilde{\beta}_{1})&=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}(x_{j}) } \\ \\
-\operatorname{se}(\hat{\beta}_{j})&=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}(x_{j}) \sqrt{1-R_{j}^{2}}}
-\end{aligned}
-$$
-This allows us to see that given the same sample and error variance $\sigma^{2}$, the variance of the OLS estimators of the coefficient in the multiple regression model can only ever be equal or larger than that of the simple regression model because of $1-R_{j}^{2}$. 
-"$x_{1}$ is almost uncorrelated" implies a value for $R_{j}^{2}$ that is close to zero. 
-
-Next, we estimate the error variance $\hat{\sigma}^{2}$ by dividing the sum of squared residuals (SSR) by the degrees of freedom (df):
+To compute the unbiased estimator of the error variance $\hat\sigma^2$ we compute according to the formula 
 
 $$
 \begin{aligned}
@@ -208,12 +162,95 @@ $$
 \end{aligned}
 $$
 
-In the case of the simple regression k=1, therefore in the multiple regression model the denominator has to be smaller and is increasing the error variance (and in turn, standard error). 
+and get __`r format(round(unbiased_residVar, 11), nsmall = 11)`__ 
 
-However, we know that the OLS residuals are defined by
+#### iii) 
+
+```{r, results='asis', echo=FALSE}
+
+invisible(stargazer(vcov(model1), header=FALSE, align=TRUE, digits=4, column.sep.width="0pt", title="Model 1 Covariance Matrix", table.placement="b"))
+
+```
+\clearpage
+
+### 3.8
+
+```{r, echo=FALSE}
+
+model2 <- lm(log(consum) ~ log(income), data=chick)
+#summary(model2)
+m2_B1 <- as.vector(coef(model2)[2]) # alpha1
+m2_r2 <- summary(model2)$r.squared
+
+model3 <- lm(log(consum) ~ log(pchick), data=chick)
+#summary(model3)
+m3_B1 <- as.vector(coef(model3)[2]) # alpha2
+m3_r2 <- summary(model3)$r.squared
+
+```
+
+```{r, results='asis', echo=FALSE}
+
+invisible(stargazer(model1, model2, model3, header=FALSE, align=TRUE, digits=7, title="Model comparison", omit.stat=c("f")))
+
+```
+
+The estimated coefficient in model 1 $\hat{\beta}_{1}$ is __`r m1_B1`__ compared to __`r m2_B1`__ of $\hat{\alpha}_{1}$ in model 2.
+
+The estimated coefficient in model 1 $\hat{\beta}_{2}$ is __`r m1_B2`__ compared to __`r m3_B1`__ of $\hat{\alpha}_{2}$ in model 3. 
+
+The reason for the difference in log(income) could be that in model 1 we have other variables that we hold equal when we change $\hat{\beta}_{1}$. However, in model 2 and 3 we only have one predictor variable so less is explained by our model (the $R^2_2$ is __`r m2_r2`__ and $R^2_2$ is __`r m3_r2`__) and we have larger error terms. As a result the effects of the coefficients change since they are not isolated. 
+
+An economic interpretation would be that higher prices of meat are strongly correlated and that they are highly substitutable. Therefore, if the prices of all meats increase, consumers buy the cheapest one which is chicken. This could explain why we see a higher demand for chicken even if the price of chicken increases. Once we control for the prices of other meats, the relationship no longer holds. 
+
+
+\newpage
+## 4 Theory
+
+### 4.1 
+
+#### i)
+
+By definition study+sleep+work+leisure=168. Therefore, if we change study we also need to change at least one of the other categories so that they still sum up to 168.
+
+#### ii)
+
+This model violates MLR.3 (No Perfect Collinearity). There is a perfect linearity between study, sleep, work and leisure, since study+sleep+work+leisure= 168, so these variables exhibit perfect multicollinearity. To not violate assumption MLR.3, we have to drop one of the independent variables, so that: <br />
+$GPA= \beta_1+ \beta_1study+ \beta_2sleep + \beta_3 work +u.$ Now, if we increase e.g study by 1, $\beta_1$ is the change in GPA, when we we increase study by 1 hour, but hold sleep and work constant. 
+
+
+### 4.2
+
+To answer this question we look at the components of the equation that define the standard error of the OLS estimators of the coefficient $\tilde{\beta}_{1}$ and $\hat{\beta}_{j}$ for the simple and multiple regression model respectively:
+
+$$
+\begin{aligned}
+\operatorname{se}(\tilde{\beta}_{1})&=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}(x_{j}) } \\ \\
+\operatorname{se}(\hat{\beta}_{j})&=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}(x_{j}) \sqrt{1-R_{j}^{2}}}
+\end{aligned}
+$$
+
+We see that given the same sample and error variance $\sigma^{2}$, the variance of the OLS estimators of the coefficient in the multiple regression model can only ever be equal or larger than that of the simple regression model because of $1-R_{j}^{2}$. 
+"$x_{1}$ is almost uncorrelated" implies a value for $R_{j}^{2}$ that is close to zero. 
+
+Next, we estimate the error variance $\hat{\sigma}^{2}$ by dividing the sum of squared residuals (SSR) by the degrees of freedom (df):
+
+$$
+\begin{aligned}
+\hat{\sigma}^{2} = \frac{\sum\limits_{i=1}^n \hat{u}_{i}^{2}}{(n - k - 1)} = \frac{\mathrm{SSR}}{\mathrm{df}}
+\end{aligned}
+$$
+
+In the case of the simple regression k=1, therefore in the multiple regression model the denominator has to be smaller and is increasing the error variance (and in turn, standard error). However, this effect tends to become smaller the larger our N. This only leaves SSR (larger sum of squared residuals) as a cause for a difference between $\tilde{\beta}_{1}$ and $\hat{\beta}_{j}$.  
+
+We know that the OLS residuals are defined by
 
 $$
 \hat{u}_{i}=y_{i}-\hat{\beta}_{0}-\hat{\beta}_{1} x_{i 1}-\hat{\beta}_{2} x_{i 2}-\ldots-\hat{\beta}_{k} x_{i k}
 $$
 
-If "$x_{2}$ and $x_{3}$ have large partial effects on y", then the residuals are likely to be smaller unless the effects of $x_{2}$ and $x_{3}$ are smaller than those of $x_{1}$ alone in the simple regression model. Whether this is enough to outweigh the larger effects the additional parameters we can not say, because we don't know how large $x_{1}$ will be after $x_{2}$ and $x_{3}$ have been included in the model.
+Therefore, given that "$x_2$ and $x_3$ have large partial effects on *y*" and assuming that all coefficients have a positive sign, $\hat{u}_{i}$ will be smaller in the model that includes more variables, which is $\hat{\beta}_{j}$.
+
+
+## References
+- Nicholson, Walter; Snyder, Christopher (2012). Microeconomic Theory: Basic Principles and Extensions (11 ed.). Mason, OH: South-Western. pp. 27, 154. ISBN 978-111-1-52553-8.
