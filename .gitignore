@@ -9,4 +9,5 @@ Case Studies/Case 1/case_1_solution.pdf
 .Rproj.user
 *.aux
 *.out
-.Rhistory
+*.Rhistory
+*.RData
