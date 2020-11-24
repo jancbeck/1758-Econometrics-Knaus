@@ -6,9 +6,9 @@ author:
 - Franz Uchatzi
 date: "8.11.2020"
 output:
-  pdf_document: default
   html_document:
     df.print: paged
+  pdf_document: default
 header-includes: 
  - \usepackage{dcolumn}
  - \renewcommand{\and}{\\}
@@ -69,12 +69,12 @@ We might consider a log-log model so that we can interpret the coefficients as e
 
 ### 3.3
 
-According to the model we expect a 1% increase of income leads to a __`r m1_B1`__% change in demand ceteris paribus.
+According to the model we expect that a 1% increase of income leads to a __`r m1_B1`__% change in demand (ceteris paribus).
 
 
 ### 3.4
 
-According to the model we expect that a 2% increase of income leads to a __`r 2*m1_B1`__% change in demand ceteris paribus.
+According to the model we expect that a 2% increase of income leads to a __`r 2*m1_B1`__% change in demand (ceteris paribus).
 
 
 ### 3.5
@@ -125,7 +125,7 @@ $$
 \mathrm{SSR}=\sum_{i=1}^{N} \hat{u}_{i}^{2} \quad \text{ and } \quad \mathrm{TSS}=\sum_{i=1}^{N}\left(y_{i}-\bar{y}\right)^{2}
 $$
 
-and get __`r r2`__
+and get __`r r2`__.
 
 ### 3.7
 
@@ -143,7 +143,7 @@ $$
 \tilde{\hat{\sigma}}^{2}=\frac{\mathrm{SSR}}{\mathrm{N}}
 $$
 
-and get __`r format(round(biased_residVar, 11), nsmall = 11)`__
+and get __`r format(round(biased_residVar, 11), nsmall = 11)`__.
 
 #### ii)
 
@@ -162,7 +162,7 @@ $$
 \end{aligned}
 $$
 
-and get __`r format(round(unbiased_residVar, 11), nsmall = 11)`__ 
+and get __`r format(round(unbiased_residVar, 11), nsmall = 11)`__.
 
 #### iii) 
 
@@ -199,7 +199,7 @@ The estimated coefficient in model 1 $\hat{\beta}_{1}$ is __`r m1_B1`__ compared
 
 The estimated coefficient in model 1 $\hat{\beta}_{2}$ is __`r m1_B2`__ compared to __`r m3_B1`__ of $\hat{\alpha}_{2}$ in model 3. 
 
-The reason for the difference in log(income) could be that in model 1 we have other variables that we hold equal when we change $\hat{\beta}_{1}$. However, in model 2 and 3 we only have one predictor variable so less is explained by our model (the $R^2_2$ is __`r m2_r2`__ and $R^2_2$ is __`r m3_r2`__) and we have larger error terms. As a result the effects of the coefficients change since they are not isolated. 
+The reason for the difference in log(income) could be that in model 1 we have other variables that we hold equal when we change $\hat{\beta}_{1}$. However, in model 2 and 3 we only have one predictor variable so less is explained by our model (the $R^2_2$ is __`r m2_r2`__ and $R^2_3$ is __`r m3_r2`__) and we have larger error terms. As a result the effects of the coefficients change since they are not isolated. 
 
 An economic interpretation would be that higher prices of meat are strongly correlated and that they are highly substitutable. Therefore, if the prices of all meats increase, consumers buy the cheapest one which is chicken. This could explain why we see a higher demand for chicken even if the price of chicken increases. Once we control for the prices of other meats, the relationship no longer holds. 
 
@@ -215,7 +215,7 @@ By definition study+sleep+work+leisure=168. Therefore, if we change study we als
 
 #### ii)
 
-This model violates MLR.3 (No Perfect Collinearity). There is a perfect linearity between study, sleep, work and leisure, since study+sleep+work+leisure= 168, so these variables exhibit perfect multicollinearity. To not violate assumption MLR.3, we have to drop one of the independent variables, so that: <br />
+This model violates MLR.3 (No Perfect Collinearity). There is a perfect linearity between study, sleep, work and leisure, since study+sleep+work+leisure=168, so these variables exhibit perfect multicollinearity. To not violate assumption MLR.3, we have to drop one of the independent variables, so that: <br />
 $GPA= \beta_1+ \beta_1study+ \beta_2sleep + \beta_3 work +u.$ Now, if we increase e.g study by 1, $\beta_1$ is the change in GPA, when we we increase study by 1 hour, but hold sleep and work constant. 
 
 
