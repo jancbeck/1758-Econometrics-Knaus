@@ -16,7 +16,9 @@ header-includes:
 
 
 ```{r setup, include=FALSE}
+library(car)
 library(stargazer)
+library(xtable)
 library(extrafont)
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 wages <- read.csv("WD1.csv")
@@ -45,23 +47,19 @@ In the histogram we see that the distribution is right-skewed with a few observa
 
 ### 2.2
 
-The proportion of workers working more than 40 hours a week is `r length(which(wages$hours > 40)) / N * 100`%.
+The proportion of workers working more than 40 hours a week is __`r length(which(wages$hours > 40)) / N * 100`%__.
 
 ### 2.3
 
 ```{r, echo=FALSE}
-#table(wages$educ),decreasing=TRUE)
+#cbind(sort(table(wages$educ),decreasing=TRUE)))
 ```
 
-The most common number of years of education among the workers is `r as.vector(sort(table(wages$educ),decreasing=TRUE)[1])[1]`.
+The most common number of years of education among the workers is __`r as.vector(sort(table(wages$educ), decreasing=TRUE)[1])[1]`__.
 
 ### 2.4
 
-```{r, echo=FALSE}
-#sort(table(wages$sibs),decreasing=TRUE)
-```
-
-No, the most frequent sibling pattern is having `r names(sort(table(wages$sibs),decreasing=TRUE))[1]` sibling.
+No. The most frequent sibling pattern is having __`r names(sort(table(wages$sibs), decreasing=TRUE))[1]`__ sibling.
 
 \newpage
 ## 3 Data modelling
@@ -87,12 +85,143 @@ No, the most frequent sibling pattern is having `r names(sort(table(wages$sibs),
 ### 3.5.6
 
 
-
 \newpage
+
 ## 4 Simulation Study
 
 ### 4.1 
 
+```{r}
+set.seed(1)
+
+# our parameters according to spec
+N1 <- 10
+N2 <- 100
+N3 <- 1000
+beta0 <- -1
+beta1 <- 0.2
+mu <- 0
+sigma <- sqrt(4)
+minX = -3
+maxX = 3
+
+# model 1
+x1 <- x <- runif(N1, min = minX, max = maxX)
+u1 <- rnorm(N1, sd = sigma, mean = mu)
+y1 <- beta0 + beta1*x1 + u1
+lm1 <- lm(y1 ~ x) # using x instead of x1 to show as one row in stargazer output 
+
+# model 2
+x2 <- x <- runif(N2, min = minX, max = maxX)
+u2 <- rnorm(N2, sd = sigma, mean = mu)
+y2 <- beta0 + beta1*x2 + u2
+lm2 <- lm(y2 ~ x) # using x instead of x2 to show as one row in stargazer output
+
+# model 3
+x3 <- x <- runif(N3, min = minX, max = maxX)
+u3 <- rnorm(N3, sd = sigma, mean = mu)
+y3 <- beta0 + beta1*x3 + u3
+lm3 <- lm(y3 ~ x) # using x instead of x3 to show as one row in stargazer output
+
+```
+
+
+```{r, results='asis', echo=FALSE}
+
+invisible(stargazer(lm1, lm2, lm3, header=FALSE, align=TRUE, digits=7, title="Model comparison"))
+
+```
+
+
+
+
+```{r, echo=FALSE}
+
+# This allows three plots to be displayed next to one another
+par(mfrow = c(1,3), mar=c(5, 3, 5, 0) + 0.1)
+
+# plot model 1
+
+plot(
+  x1, y1, 
+  main = bquote(N ~ "=" ~ .(N1)), 
+  sub = bquote(hat(beta)[0] ~ "=" ~ .(round(lm1$coef[1], 2)) ~"    " ~ hat(beta)[1] ~ "=" ~ .(round(lm1$coef[2], 2))),
+  xlim = c(minX,maxX), ylim = c(-8, 8), 
+  col = "gray", 
+  xlab = "", ylab = "")
+abline(beta0, beta1, lty=2)
+abline(lm1)
+
+legend("topright", legend=c("estimated slope","true slope"), lty=c(1,2))
+
+# plot model 2
+
+plot(x2, y2, main = bquote(N ~ "=" ~ .(N2)), sub = bquote(hat(beta)[0] ~ "=" ~ .(round(lm2$coef[1], 2)) ~
+                             "    " ~ hat(beta)[1] ~ "=" ~ .(round(lm2$coef[2], 2))),
+     xlim = c(minX,maxX), ylim = c(-8, 8), col = "gray", xlab = "", ylab = "")
+
+abline(beta0, beta1, lty=2)
+abline(lm2)
+
+legend("topright", legend=c("estimated slope","true slope"), lty=c(1,2))
+
+
+
+# plot model 3
+
+plot(x3, y3, main = bquote(N ~ "=" ~ .(N3)), sub = bquote(hat(beta)[0] ~ "=" ~ .(round(lm3$coef[1], 2)) ~
+                             "    " ~ hat(beta)[1] ~ "=" ~ .(round(lm3$coef[2], 2))),
+     xlim = c(minX,maxX), ylim = c(-8, 8), col = "gray", xlab = "", ylab = "")
+abline(beta0, beta1, lty=2)
+abline(lm3)
+
+legend("topright", legend=c("estimated slope","true slope"), lty=c(1,2))
+
+
+```
+
+
 ### 4.2
+
+```{r, echo=FALSE}
+
+alpha <- 0.05
+
+for (i in 1:3) { # iterate over all 3 models
+  for (j in 0:1) { # iterate over beta 0 and 1
+    # get the standard error of current variable from model
+    se <- as.vector(summary(get(paste("lm", i, sep="")))$coefficients[,2][j+1])
+    # create variable name
+    nam <- paste("beta", j, "ci", i, sep = "")
+    # get coef value
+    coef <- as.vector(get(paste("lm", i, sep=""))$coef[j+1])
+    # calculate left ci boundary
+    ciL <- coef - alpha / 2 * se
+    # calculate right ci boundary
+    ciR <- coef + alpha / 2 * se
+    # assign variable 
+    assign(nam, c(ciL, ciR))
+  }
+}
+
+# model 1
+beta0se1 <- summary(lm1)$coefficients[,2][1]
+beta0ci1 <- c( as.vector(lm1$coef[1]) - (alpha / 2) * beta0se1, as.vector(lm1$coef[1]) + (alpha / 2) * beta0se1 )
+beta1se1 <- summary(lm1)$coefficients[,2][2]
+beta1ci1 <- c( as.vector(lm1$coef[2]) - (alpha / 2) * beta1se1, as.vector(lm1$coef[2]) + (alpha / 2) * beta1se1 )
+
+# model 2
+beta0se2 <- summary(lm2)$coefficients[,2][1]
+beta0ci2 <- c( as.vector(lm2$coef[1]) - (alpha / 2) * beta0se2, as.vector(lm2$coef[1]) + (alpha / 2) * beta0se2 )
+beta1se2 <- summary(lm2)$coefficients[,2][2]
+beta1ci2 <- c( as.vector(lm2$coef[2]) - (alpha / 2) * beta1se2, as.vector(lm2$coef[2]) + (alpha / 2) * beta1se2 )
+
+# model 3
+beta0se3 <- summary(lm3)$coefficients[,2][1]
+beta0ci3 <- c( as.vector(lm3$coef[1]) - (alpha / 2) * beta0se3, as.vector(lm3$coef[1]) + (alpha / 2) * beta0se3 )
+beta1se3 <- summary(lm3)$coefficients[,2][2]
+beta1ci3 <- c( as.vector(lm3$coef[2]) - (alpha / 2) * beta1se3, as.vector(lm3$coef[2]) + (alpha / 2) * beta1se3 )
+
+```
 
 ### 4.3
