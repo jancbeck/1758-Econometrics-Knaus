@@ -19,8 +19,8 @@ head(marketing)
 
 beta0 <- 0.2
 beta1 <- -1.8
-N <- 100
-sigma <- 2
+N <- 1000
+sigma <- .5
 
 # Generate random covariates
 x <- runif(N) + 1
@@ -88,7 +88,7 @@ sigma <- sqrt(.1)
 
 # Set two different sample sizes
 N <- 50
-N2 <- 400
+N2 <- 4000
 
 # This allows two plots to be displayed next to one another
 par(mfrow = c(1,2))
@@ -260,7 +260,7 @@ yield_lm2 <- lm(y ~ x1 + x2 + x3)
 summary(yield_lm2)
 # The parameter for x3 could not be estimated, due to perfect multicollinearity
 # Check what happens if you change the order of the covariates in R (e.g. lm(y ~ x3 + x2 + x1))
-
+lm(y ~ x3 + x2 + x1)
 
 # Slide 128 ---------------------------------------------------------------
 
@@ -297,6 +297,11 @@ abline(b = 1, a = 0, lty = 2, col = "grey")
 # How could you find the residuals from this plot?
 
 
+yresid <- chicken$consum - fit
+N <- length(yresid)
+for (i in 1:N) {
+  lines(c(fit[i], fit[i]), c(yresid[i], yresid[i]))
+}
 # Slide 134 ---------------------------------------------------------------
 
 # Use same model as slide 128 (above)
