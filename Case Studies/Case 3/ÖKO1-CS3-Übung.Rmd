@@ -6,9 +6,9 @@ author:
 - Franz Uchatzi
 date: "29.11.2020"
 output:
+  pdf_document: default
   html_document:
     df.print: paged
-  pdf_document: default
 header-includes: 
  - \usepackage{dcolumn}
  - \renewcommand{\and}{\\}
@@ -17,6 +17,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 library(stargazer)
+library(extrafont)
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 wages <- read.csv("WD1.csv")
 N <- nrow(wages)
@@ -24,19 +25,43 @@ N <- nrow(wages)
 
 ## 2 Descriptive statistics
 
+```{r, results='asis', echo=FALSE}
+stargazer(wages, omit = c("X"), header=FALSE, type='latex', summary.stat=c('mean', 'sd', 'median', 'min', 'max'), title='Summary statistics', align=TRUE)
+```
+\newpage
 ### 2.1
 
-```{r, echo=false}
-summary(wages$wage)
+The average wage is USD __`r round(mean(wages$wage), 2)`__ and the median wage is USD __`r median(wages$wage)`__.
+
+```{r, echo=FALSE}
+hist(wages$wage, main="Histogram of wage", xlab="Wage in USD")
+legend("topright", legend=c("Mean","Median"), lwd=c(2,2), col=c("red","blue"))
+abline(v = mean(wages$wage), col = "red", lwd = 2)
+abline(v = median(wages$wage), col = "blue", lwd = 2)
+
 ```
 
-
+In the histogram we see that the distribution is right-skewed with a few observations exceeding USD 3000. Most observed values are concentrated around an interval of USD ±500 above and below the mean. Median and mean are fairly close to each other with the median being slightly higher due to the large outliers.
 
 ### 2.2
 
+The proportion of workers working more than 40 hours a week is `r length(which(wages$hours > 40)) / N * 100`%.
+
 ### 2.3
 
+```{r, echo=FALSE}
+#table(wages$educ),decreasing=TRUE)
+```
+
+The most common number of years of education among the workers is `r as.vector(sort(table(wages$educ),decreasing=TRUE)[1])[1]`.
+
 ### 2.4
+
+```{r, echo=FALSE}
+#sort(table(wages$sibs),decreasing=TRUE)
+```
+
+No, the most frequent sibling pattern is having `r names(sort(table(wages$sibs),decreasing=TRUE))[1]` sibling.
 
 \newpage
 ## 3 Data modelling
