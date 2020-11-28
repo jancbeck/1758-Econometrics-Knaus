@@ -3,7 +3,7 @@ title: "Case Study 3 - Group 4"
 author:
 - Annika Janson h11829506
 - Jan Beck h11814291
-- Franz Uchatzi
+- Franz Uchatzi h1451890
 date: "29.11.2020"
 output:
   pdf_document: default
@@ -25,7 +25,7 @@ wages <- read.csv("WD1.csv")
 N <- nrow(wages)
 ```
 
-## 2 Descriptive statistics
+# 2 Descriptive statistics
 
 ```{r, results='asis', echo=FALSE}
 stargazer(wages, omit = c("X"), header=FALSE, type='latex', summary.stat=c('mean', 'sd', 'median', 'min', 'max'), title='Summary statistics', align=TRUE)
@@ -51,38 +51,248 @@ The proportion of workers working more than 40 hours a week is __`r length(which
 
 ### 2.3
 
-```{r, echo=FALSE}
-#cbind(sort(table(wages$educ),decreasing=TRUE)))
-```
-
-The most common number of years of education among the workers is __`r as.vector(sort(table(wages$educ), decreasing=TRUE)[1])[1]`__.
+The most common number of years of education among the workers is __`r row.names(cbind(sort(table(wages$educ),decreasing=TRUE)))[1]`__.
 
 ### 2.4
 
 No. The most frequent sibling pattern is having __`r names(sort(table(wages$sibs), decreasing=TRUE))[1]`__ sibling.
 
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+barplot(sort(table(wages$educ),decreasing=TRUE), 
+  xlab="years of education",
+  ylab="count"
+)
+barplot(sort(table(wages$sibs), decreasing=TRUE), 
+  xlab="number of siblings",
+  ylab="count"
+)
+```
+
 \newpage
-## 3 Data modelling
+# 3 Data modelling
 
 ### 3.1
 
+```{r, echo=FALSE}
+wage = wages$wage
+hours = wages$hours
+educ = wages$educ
+exper = wages$exper
+tenure = wages$tenure
+age = wages$age
+iq = wages$IQ
+sibs = wages$sibs
+brthord = wages$brthord
+meduc = wages$meduc
+feduc = wages$feduc
+
+#wage.lm = lm(wage ~ hours + educ + exper + tenure + age + iq + sibs + brthord + meduc + feduc, data=wd)
+#summary(wage.lm)
+
+# reg1 = lm(log(wage) ~ log(hours) + log(educ) + log(exper) + log(tenure) + log(age) + log(iq) + log(sibs) + log(brthord) + log(meduc) + log(feduc), data=wd)
+
+lwage = lm(log(wage) ~ hours + educ + exper + tenure + age + iq + sibs + brthord + meduc + feduc, data=wages)
+
+
+#summary(lwage)
+reg1.fit = fitted(lwage)
+#reg1.fit
+
+lwage_B0 <- as.vector(coef(lwage)[1]) # intercept
+lwage_B1 <- as.vector(coef(lwage)[2]) # beta1hat hours
+lwage_B2 <- as.vector(coef(lwage)[3]) # beta2hat educ
+lwage_B3 <- as.vector(coef(lwage)[4]) # beta3hat exper
+lwage_B4 <- as.vector(coef(lwage)[5]) # beta4hat tenure
+lwage_B5 <- as.vector(coef(lwage)[6]) # beta5hat age
+lwage_B6 <- as.vector(coef(lwage)[7]) # beta6hat iq
+lwage_B7 <- as.vector(coef(lwage)[8]) # beta7hat sibs
+lwage_B8 <- as.vector(coef(lwage)[9]) # beta8hat brthord
+lwage_B9 <- as.vector(coef(lwage)[10]) # beta9hat meduc
+lwage_B10 <- as.vector(coef(lwage)[11]) # beta10hat feduc
+
+r2 <- summary(lwage)$r.squared
+r2.percent <- round((r2*100), digits=4)
+```
+
+```{r, results='asis', echo=FALSE}
+stargazer(lwage, 
+  header=FALSE, 
+  type='latex', 
+  title='Model summary', 
+  align=TRUE, 
+  report="vc*sp",
+  single.row=TRUE,
+  ci.custom = list(confint(lwage))
+)
+```
+
+(Parenthesis show 95%-confidence intervals.)
+
+The coefficient of determination is __`r r2`__. Therefore, __`r r2.percent`__ % of the variation of the dependent variable wage is explained by variation of the independent variables of the current model.
+
+\newpage
+
 ### 3.2
+
+```{r, echo=FALSE}
+lwage_B2 <- as.vector(coef(lwage)[3]) # beta2hat educ
+lwage_B2.percent <- round((lwage_B2 * 100), digits=3)
+
+```
+
+If we increase X (education) by one year we expect wage to increase approximately^[100 * $\hat{\beta}_{j}$%] by __`r lwage_B2.percent`__% (or by __`r 100 * ( exp(lwage_B2) - 1)`__%  exactly^[100 * ($e^{\hat{\beta}}_{j}$ - 1)%]), c.p.
+
 
 ### 3.3
 
+```{r, echo=FALSE}
+lwage_B8 <- as.vector(coef(lwage)[9]) # beta8hat brthord
+
+pvalue <- as.vector(summary(lwage)$coefficients[,4]) # saves the p-values as vector
+brthord.p <- pvalue[9] # shows the p-value of the variable brthord
+lwage_B8.percent <- round((lwage_B8 * 100), digits=3)
+```
+
+For each additional older sibling we expect the wage to decrease by approximately^1^ __`r abs(lwage_B8.percent)`__ % (or by __`r abs(100 * ( exp(lwage_B8) - 1))`__%  exactly^2^), c.p. However, the p-value of the variable `brthord` is __`r brthord.p`__. This indicates that we can not reject the null hypothesis $\hat{\beta}_{8}$ = 0 when using a significance level of $\alpha=0.05$.
+
+
 ### 3.4
+
+```{r, echo=FALSE}
+lwage_B2 <- as.vector(coef(lwage)[3]) # beta2hat educ
+lwage_B9 <- as.vector(coef(lwage)[10]) # beta9hat meduc
+lwage_B10 <- as.vector(coef(lwage)[11]) # beta10hat feduc
+lwage_B2.percent <- round((lwage_B2 * 100), digits=3)
+lwage_B9.percent <- round((lwage_B9 * 100), digits=3)
+lwage_B10.percent <- round((lwage_B10 * 100), digits=3)
+
+```
+
+If we increase X (education) by three years we expect wage to increase approximately^1^ by __`r lwage_B2.percent * 3`__% (or by __`r 3 * 100 * ( exp(lwage_B2) - 1)`__%  exactly^2^), c.p.  
+  
+Analogously, if we increase X (years of education of mother) by three years we expect wage to increase approximately^1^ by __`r lwage_B9.percent * 3`__% (or by __`r 3 * 100 * ( exp(lwage_B9) - 1)`__%  exactly^2^), c.p.
+
+And if we increase X (years of education of father) by three year we expect wage to increase approximately^1^ by __`r lwage_B10.percent * 3`__% (or by __`r 3 * 100 * ( exp(lwage_B10) - 1)`__%  exactly^2^), c.p.  
+  
+We can see that the largest average effect on wage with three additional years of education of the variables educ, meduc and feduc is achieved by the education of the workers themselves.
+
+This is because the coefficient for `educ` (`r lwage_B2`) is larger than that of `meduc` (`r lwage_B9`) and `feduc` (`r lwage_B10`).
+
+Note that the effects of `meduc` and `feduc` are not significant at the 5%-level.
+
 
 ### 3.5.1
 
+```{r, echo=FALSE}
+
+educ.p <- pvalue[3] # shows the p-value of the variable educ
+educ.t <- summary(lwage)$coef[,3][3] # shows the test statistic of the variable educ
+
+```
+
+$H_0: \beta_{educ}=0$  
+$H_1: \beta_{educ}\neq0$
+
+The p-value is __`r format(educ.p, scientific=FALSE)`__ and the t-statistic is __`r format(educ.t, scientific=FALSE)`__. Therefore, we __reject__ the null hypothesis at the 5% significance level and assume that an additional year of education has  influence on wage, c.p.
+
+
 ### 3.5.2
+
+```{r, echo=FALSE}
+brthord.p <- pvalue[9] # pvalue of brthord from model lwages
+brthord.t <- summary(lwage)$coef[,3][9] # shows the test statistic of the variable educ
+
+```
+
+$H_0: \beta_{brthord}=0$  
+$H_1: \beta_{brthord}\neq0$
+
+The p-value is __`r format(brthord.p, scientific=FALSE)`__ and the t-statistic is __`r format(brthord.t, scientific=FALSE)`__. Therefore, we do __not reject__ the null hypothesis at the 5% significance level and assume that the variable birth order has no influence on wages, c.p.
 
 ### 3.5.3
 
+```{r, echo=FALSE}
+lwage_test1 <- linearHypothesis(lwage, c("sibs=0", "brthord=0", "meduc=0", "feduc=0")) # h0: the variables number of siblings, birth order, years of education of mother/father have no influence on wages jointly
+lwage_test1.p <- lwage_test1$`Pr(>F)`[2]
+lwage_test1.F <- lwage_test1$F[2]
+```
+
+$H_0: \beta_{sibs}=\beta_{brthord}=\beta_{meduc}=\beta_{feduc}=0$  
+$H_1: H_0\ \text{is not true.}$ 
+
+As we can see in the summary in 3.1 the variables with a p-value < 0.05 are `sibs`, `brthord`, `meduc`, `feduc` and, therefore, have on average no significant influence on wages individually.  
+
+We run a linear hypthesis test and find that the p-value is __`r lwage_test1.p`__ and the F-statistic is __`r lwage_test1.F`__. Therefore, we __reject__ the null hypothesis at the 5% significance level and assume that the coefficients for `sibs`, `brthord`, `meduc` and `feduc` can not be jointly excluded from the model c.p. as at least one of them is different from 0. However, we do not know which one.
+
+  
+```{r, results='asis', echo=FALSE}
+stargazer(lwage_test1, 
+  header=FALSE, 
+  summary=FALSE,
+  type='latex', 
+  title='Linear hypothesis test: sibs=0 brthord=0 meduc=0 feduc=0', 
+  align=TRUE
+)
+```
+
 ### 3.5.4
+
+```{r, echo=FALSE}
+lwage_test2 <- linearHypothesis(lwage, c("sibs=0", "brthord=0", "meduc=0")) # h0: the variables number ofund  siblings, birth order, years of education of mother have no influence on wages jointly
+lwage_test2.p <- lwage_test2$`Pr(>F)`[2]
+lwage_test2.F <- lwage_test2$F[2]
+```
+
+$H_0: \beta_{sibs}=\beta_{brthord}=\beta_{meduc}=0$   
+$H_1: H_0\ \text{is not true.}$ 
+
+We run a linear hypthesis test and find that the p-value is __`r lwage_test2.p`__ and the F-statistic is __`r lwage_test2.F`__. 
+We find little evidence in the data that we should reject the null hypothesis that the coefficients for `sibs`, `brthord`, `meduc` and `feduc` are equal to 0 and therefore can not be jointly excluded from the model, c.p. 
+
+  
+```{r, results='asis', echo=FALSE}
+stargazer(lwage_test2, 
+  header=FALSE, 
+  summary=FALSE,
+  type='latex', 
+  title='Linear hypothesis test: sibs=0 brthord=0 meduc=0', 
+  align=TRUE
+)
+```
 
 ### 3.5.5
 
+```{r, echo=FALSE}
+lwage_test3 <- linearHypothesis(lwage, c("meduc=feduc")) # h0: The variables years of education mother and years of education father have the same effect on wages, c.p. 
+lwage_test3.p <- lwage_test3$`Pr(>F)`[2]
+lwage_test3.F <- lwage_test3$F[2]
+
+```
+
+$H_0: \beta_{meduc}-\beta_{feduc}=0$ or: $H_0: \beta_{meduc}=\beta_{feduc}$  
+$H_1: \beta_{meduc}-\beta_{feduc}\neq0$ 
+
+We run a linear hypthesis test and find that the p-value is __`r lwage_test3.p`__ and the F-statistic is __`r lwage_test3.F`__. 
+We find little evidence in the data that we should reject the null hypothesis that the coefficients for `meduc` and `feduc` are the same, c.p. 
+  
+```{r, results='asis', echo=FALSE}
+stargazer(lwage_test3, 
+  header=FALSE, 
+  summary=FALSE,
+  type='latex', 
+  title='Linear hypothesis test: meduc-feduc=0', 
+  align=TRUE
+)
+```
+
 ### 3.5.6
+
+Franz:
+
+Annika:
+
+Jan: 
 
 
 \newpage
@@ -180,48 +390,91 @@ legend("topright", legend=c("estimated slope","true slope"), lty=c(1,2))
 
 ```
 
+\newpage
+### 4.2 
 
-### 4.2
+Calculated 95%-confidence intervals and standard errors for beta0 and beta1 and different Ns:
 
 ```{r, echo=FALSE}
 
 alpha <- 0.05
-
-for (i in 1:3) { # iterate over all 3 models
-  for (j in 0:1) { # iterate over beta 0 and 1
-    # get the standard error of current variable from model
-    se <- as.vector(summary(get(paste("lm", i, sep="")))$coefficients[,2][j+1])
-    # create variable name
-    nam <- paste("beta", j, "ci", i, sep = "")
-    # get coef value
-    coef <- as.vector(get(paste("lm", i, sep=""))$coef[j+1])
-    # calculate left ci boundary
-    ciL <- coef - alpha / 2 * se
-    # calculate right ci boundary
-    ciR <- coef + alpha / 2 * se
-    # assign variable 
-    assign(nam, c(ciL, ciR))
-  }
-}
+K <- 1
 
 # model 1
-beta0se1 <- summary(lm1)$coefficients[,2][1]
-beta0ci1 <- c( as.vector(lm1$coef[1]) - (alpha / 2) * beta0se1, as.vector(lm1$coef[1]) + (alpha / 2) * beta0se1 )
-beta1se1 <- summary(lm1)$coefficients[,2][2]
-beta1ci1 <- c( as.vector(lm1$coef[2]) - (alpha / 2) * beta1se1, as.vector(lm1$coef[2]) + (alpha / 2) * beta1se1 )
+lm1beta0 <- as.vector(summary(lm1)$coef[,1][1])
+lm1beta0se <- as.vector(summary(lm1)$coef[,2][1])
+lm1beta1 <- as.vector(summary(lm1)$coef[,1][2])
+lm1beta1se <- as.vector(summary(lm1)$coef[,2][2])
+qt1 <- qt(1-alpha/2, df=N1-K-1)
+ci1beta0 <- c(lm1beta0 - qt1 * lm1beta0se, lm1beta0 + qt1 * lm1beta0se)
+ci1beta1 <- c(lm1beta1 - qt1 * lm1beta1se, lm1beta1 + qt1 * lm1beta1se)
+
+# all.equal(as.vector(confint(lm1, 1)), ci1beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm1, 2)), ci1beta1) # TRUE means we calculated correctly
+
 
 # model 2
-beta0se2 <- summary(lm2)$coefficients[,2][1]
-beta0ci2 <- c( as.vector(lm2$coef[1]) - (alpha / 2) * beta0se2, as.vector(lm2$coef[1]) + (alpha / 2) * beta0se2 )
-beta1se2 <- summary(lm2)$coefficients[,2][2]
-beta1ci2 <- c( as.vector(lm2$coef[2]) - (alpha / 2) * beta1se2, as.vector(lm2$coef[2]) + (alpha / 2) * beta1se2 )
+lm2beta0 <- as.vector(summary(lm2)$coef[,1][1])
+lm2beta0se <- as.vector(summary(lm2)$coef[,2][1])
+lm2beta1 <- as.vector(summary(lm2)$coef[,1][2])
+lm2beta1se <- as.vector(summary(lm2)$coef[,2][2])
+qt2 <- qt(1-alpha/2, df=N2-K-1)
+ci2beta0 <- c(lm2beta0 - qt2 * lm2beta0se, lm2beta0 + qt2 * lm2beta0se)
+ci2beta1 <- c(lm2beta1 - qt2 * lm2beta1se, lm2beta1 + qt2 * lm2beta1se)
+
+# all.equal(as.vector(confint(lm2, 1)), ci2beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm2, 2)), ci2beta1) # TRUE means we calculated correctly
+
 
 # model 3
-beta0se3 <- summary(lm3)$coefficients[,2][1]
-beta0ci3 <- c( as.vector(lm3$coef[1]) - (alpha / 2) * beta0se3, as.vector(lm3$coef[1]) + (alpha / 2) * beta0se3 )
-beta1se3 <- summary(lm3)$coefficients[,2][2]
-beta1ci3 <- c( as.vector(lm3$coef[2]) - (alpha / 2) * beta1se3, as.vector(lm3$coef[2]) + (alpha / 2) * beta1se3 )
+lm3beta0 <- as.vector(summary(lm3)$coef[,1][1])
+lm3beta0se <- as.vector(summary(lm3)$coef[,2][1])
+lm3beta1 <- as.vector(summary(lm3)$coef[,1][2])
+lm3beta1se <- as.vector(summary(lm3)$coef[,2][2])
+qt3 <- qt(1-alpha/2, df=N3-K-1)
+ci3beta0 <- c(lm3beta0 - qt3 * lm3beta0se, lm3beta0 + qt3 * lm3beta0se)
+ci3beta1 <- c(lm3beta1 - qt3 * lm3beta1se, lm3beta1 + qt3 * lm3beta1se)
+
+# all.equal(as.vector(confint(lm3, 1)), ci3beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm3, 2)), ci3beta1) # TRUE means we calculated correctly
+
 
 ```
+
+```{r, results='asis', echo=FALSE}
+# build a table for the listing the CIs
+ciSummary <- data.frame(
+  N = c(N1,N2,N3), 
+  beta0 = c(
+    paste("(", round(ci1beta0[1], 4),", ", round(ci1beta0[2], 4), ")", sep=""), 
+    paste("(", round(ci2beta0[1], 4),", ", round(ci2beta0[2], 4), ")", sep=""), 
+    paste("(", round(ci3beta0[1], 4),", ", round(ci3beta0[2], 4), ")", sep="")), 
+  beta1 = c(
+    paste("(", round(ci1beta1[1], 4),", ", round(ci1beta1[2], 4), ")", sep=""), 
+    paste("(", round(ci2beta1[1], 4),", ", round(ci2beta1[2], 4), ")", sep=""), 
+    paste("(", round(ci3beta1[1], 4),", ", round(ci3beta1[2], 4), ")", sep="")),
+  se0 = c(
+    lm1beta0se,
+    lm2beta0se,
+    lm3beta0se),
+  se1 = c(
+    lm1beta1se,
+    lm2beta1se,
+    lm3beta1se)
+)
+stargazer(ciSummary, summary=FALSE, rownames=FALSE, align=TRUE, header=FALSE)
+```
+
+We observe that the standard errors decrease for greater Ns and therefore the confidence intervals get smaller. This means that we become more certain of our estimation. For example, only with N=1000 does the confidence interval for $\beta_1$ not include 0 and at the 5%-confidence interval, we could therefore reject the null hypothesis $\beta_1=0$.
+
+This shows that the OLS estimator is __consistent__ i.e. for ever larger Ns the estimator converges "in probability" to the true value of $\beta$. 
+
+The reason for this can be seen in the formula for the standard error:
+
+$$
+\operatorname{se}\left(\hat{\beta}_{j}|X\right)=\frac{\hat{\sigma}}{\sqrt{n} \operatorname{sd}\left(x_{j}\right) \sqrt{1-R_{j}^{2}}}
+$$
+
+All else equal, when $\sqrt{n}$ in the denominator approaches $\infty$, the overall result approaches 0.
 
 ### 4.3
