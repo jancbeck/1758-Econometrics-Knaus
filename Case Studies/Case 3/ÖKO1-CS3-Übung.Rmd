@@ -9,9 +9,10 @@ output:
   pdf_document: default
   html_document:
     df.print: paged
-header-includes: 
- - \usepackage{dcolumn}
- - \renewcommand{\and}{\\}
+  word_document: default
+header-includes:
+- \usepackage{dcolumn}
+- \renewcommand{\and}{\\}
 ---
 
 
@@ -20,6 +21,13 @@ library(car)
 library(stargazer)
 library(xtable)
 library(extrafont)
+library(greekLetters)
+library(xtable)
+
+options(xtable.floating = FALSE)
+options(xtable.timestamp = "")
+options(xtable.comment = FALSE)
+
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 wages <- read.csv("WD1.csv")
 N <- nrow(wages)
@@ -154,7 +162,7 @@ brthord.p <- pvalue[9] # shows the p-value of the variable brthord
 lwage_B8.percent <- round((lwage_B8 * 100), digits=3)
 ```
 
-For each additional older sibling we expect the wage to decrease by approximately^1^ __`r abs(lwage_B8.percent)`__ % (or by __`r abs(100 * ( exp(lwage_B8) - 1))`__%  exactly^2^), c.p. However, the p-value of the variable `brthord` is __`r brthord.p`__. This indicates that we can not reject the null hypothesis $\hat{\beta}_{8}$ = 0 when using a significance level of $\alpha=0.05$.
+For each additional older sibling we expect the wage to decrease by approximately^1^ __`r abs(lwage_B8.percent)`__ % (or by __`r abs(100 * ( exp(lwage_B8) - 1))`__%  exactly^2^), c.p. However, the p-value of the variable `brthord` is __`r brthord.p`__. This indicates that we can not reject the null hypothesis $\hat{\beta}_{8}$ = 0 when using a significance level of $\alpha=0.05$. 
 
 
 ### 3.4
@@ -248,7 +256,7 @@ $H_0: \beta_{sibs}=\beta_{brthord}=\beta_{meduc}=0$
 $H_1: H_0\ \text{is not true.}$ 
 
 We run a linear hypthesis test and find that the p-value is __`r lwage_test2.p`__ and the F-statistic is __`r lwage_test2.F`__. 
-We find little evidence in the data that we should reject the null hypothesis that the coefficients for `sibs`, `brthord`, `meduc` and `feduc` are equal to 0 and therefore can not be jointly excluded from the model, c.p. 
+We find little evidence in the data that we should reject the null hypothesis that the coefficients for `sibs`, `brthord`, `meduc` and `feduc` are equal to 0 and therefore can be jointly excluded from the model, c.p. 
 
   
 ```{r, results='asis', echo=FALSE}
@@ -286,13 +294,15 @@ stargazer(lwage_test3,
 )
 ```
 
+\newpage
+
 ### 3.5.6
 
 Franz:
 
-Annika:
+Annika: Yes. It seems that an additional year of education has the largest effect on wage and other variables are not as important. So with continuing my studies at WU I expect an increase in my future wage. Beside of my interest in learning, a increase in wage is something motivating me to continue my studies. 
 
-Jan: 
+Jan: I would not overinterpret the results for my own career. The r^2 is relatively low, the data is 40 years old and we don't know where the sample was taken from. In addition, there is some evidence that suggests that returns on education is not linear due to the sheepskin effect ^[https://www.nas.org/blogs/article/the_sheepskin_effect]
 
 
 \newpage
@@ -477,4 +487,224 @@ $$
 
 All else equal, when $\sqrt{n}$ in the denominator approaches $\infty$, the overall result approaches 0.
 
+\newpage
 ### 4.3
+
+For this we run 3 more experiments, this time with values of 2, 5 and 8 for $\sigma^2$:
+
+```{r}
+
+N <- (N3)
+var <- c(2,5,8)
+sig <- sqrt(var)
+x <- runif(N, -3, 3)
+u1 <- rnorm (N, 0, sig[1])
+u2 <- rnorm (N, 0, sig[2])
+u3 <- rnorm (N, 0, sig[3])
+
+# model 4
+x1 <- x <- runif(N3, min =minX, max =maxX)
+u1 <- rnorm(N3, sd =sig[1], mean = mu)
+y1 <- beta0 + beta1*x1 + u1
+lm4 <- lm(y1 ~ x1) 
+
+
+# model 5
+x2 <- x <- runif(N3, min = minX, max = maxX)
+u2 <- rnorm(N3, sd = sig[2], mean = mu)
+y2 <- beta0 + beta1*x2 + u2
+lm5 <- lm(y2 ~ x2) 
+
+# model 6
+x3 <- x <- runif(N3, min = minX, max = maxX)
+u3 <- rnorm(N3, sd = sig[3], mean = mu)
+y3 <- beta0 + beta1*x3 + u3
+lm6 <- lm(y3 ~ x3) 
+
+
+```
+
+```{r, echo=FALSE}
+
+alpha <- 0.1
+K <- 1
+
+# model 4
+lm4beta0 <- as.vector(summary(lm4)$coef[,1][1])
+lm4beta0se <- as.vector(summary(lm4)$coef[,2][1])
+lm4beta1 <- as.vector(summary(lm4)$coef[,1][2])
+lm4beta1se <- as.vector(summary(lm4)$coef[,2][2])
+qt1 <- qt(1-alpha/2, df=N1-K-1)
+ci1beta0 <- c(lm4beta0 - qt1 * lm4beta0se, lm4beta0 + qt1 * lm4beta0se)
+ci1beta0_sig1_alp1<- abs(ci1beta0[1]-ci1beta0[2])
+ci1beta1 <- c(lm4beta1 - qt1 * lm4beta1se, lm4beta1 + qt1 * lm4beta1se)
+ci1beta1_sig1_alp1<- abs(ci1beta1[1]-ci1beta1[2])
+
+# all.equal(as.vector(confint(lm4, 1)), ci1beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm4, 2)), ci1beta1) # TRUE means we calculated correctly
+
+
+# model 5
+lm5beta0 <- as.vector(summary(lm5)$coef[,1][1])
+lm5beta0se <- as.vector(summary(lm5)$coef[,2][1])
+lm5beta1 <- as.vector(summary(lm5)$coef[,1][2])
+lm5beta1se <- as.vector(summary(lm5)$coef[,2][2])
+qt2 <- qt(1-alpha/2, df=N2-K-1)
+ci2beta0 <- c(lm5beta0 - qt2 * lm5beta0se, lm5beta0 + qt2 * lm5beta0se)
+ci2beta0_sig2_alp1<- abs(ci2beta0[1]-ci2beta0[2])
+ci2beta1 <- c(lm5beta1 - qt2 * lm5beta1se, lm5beta1 + qt2 * lm5beta1se)
+ci2beta1_sig2_alp1<- abs(ci2beta1[1]-ci2beta1[2])
+
+# all.equal(as.vector(confint(lm5, 1)), ci2beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm5, 2)), ci2beta1) # TRUE means we calculated correctly
+
+
+# model 6
+lm6beta0 <- as.vector(summary(lm6)$coef[,1][1])
+lm6beta0se <- as.vector(summary(lm6)$coef[,2][1])
+lm6beta1 <- as.vector(summary(lm6)$coef[,1][2])
+lm6beta1se <- as.vector(summary(lm6)$coef[,2][2])
+qt3 <- qt(1-alpha/2, df=N3-K-1)
+ci3beta0 <- c(lm6beta0 - qt3 * lm6beta0se, lm6beta0 + qt3 * lm6beta0se)
+ci3beta0_sig3_alp1<- abs(ci3beta0[1]-ci3beta0[2])
+ci3beta1 <- c(lm6beta1 - qt3 * lm6beta1se, lm6beta1 + qt3 * lm6beta1se)
+ci3beta1_sig3_alp1<- abs(ci3beta1[1]-ci3beta1[2])
+
+# all.equal(as.vector(confint(lm6, 1)), ci3beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm6, 2)), ci3beta1) # TRUE means we calculated correctly
+
+alpha <- 0.05
+K <- 1
+
+# model 4
+lm4beta0 <- as.vector(summary(lm4)$coef[,1][1])
+lm4beta0se <- as.vector(summary(lm4)$coef[,2][1])
+lm4beta1 <- as.vector(summary(lm4)$coef[,1][2])
+lm4beta1se <- as.vector(summary(lm4)$coef[,2][2])
+qt1 <- qt(1-alpha/2, df=N1-K-1)
+ci1beta0 <- c(lm4beta0 - qt1 * lm4beta0se, lm4beta0 + qt1 * lm4beta0se)
+
+ci1beta0_sig1_alp2<- abs(ci1beta0[1]-ci1beta0[2])
+ci1beta1 <- c(lm4beta1 - qt1 * lm4beta1se, lm4beta1 + qt1 * lm4beta1se)
+
+ci1beta1_sig1_alp2<- abs(ci1beta0[1]-ci1beta0[2])
+
+# all.equal(as.vector(confint(lm4, 1)), ci1beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm4, 2)), ci1beta1) # TRUE means we calculated correctly
+
+
+# model 5
+lm5beta0 <- as.vector(summary(lm5)$coef[,1][1])
+lm5beta0se <- as.vector(summary(lm5)$coef[,2][1])
+lm5beta1 <- as.vector(summary(lm5)$coef[,1][2])
+lm5beta1se <- as.vector(summary(lm5)$coef[,2][2])
+qt2 <- qt(1-alpha/2, df=N2-K-1)
+ci2beta0 <- c(lm5beta0 - qt2 * lm5beta0se, lm5beta0 + qt2 * lm5beta0se)
+
+ci2beta0_sig2_alp2<- abs(ci2beta0[1]-ci2beta0[2])
+ci2beta1 <- c(lm5beta1 - qt2 * lm5beta1se, lm5beta1 + qt2 * lm5beta1se)
+ci2beta1_sig2_alp2<- abs(ci2beta1[1]-ci2beta1[2])
+
+# all.equal(as.vector(confint(lm5, 1)), ci2beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm5, 2)), ci2beta1) # TRUE means we calculated correctly
+
+
+# model 6
+lm6beta0 <- as.vector(summary(lm6)$coef[,1][1])
+lm6beta0se <- as.vector(summary(lm6)$coef[,2][1])
+lm6beta1 <- as.vector(summary(lm6)$coef[,1][2])
+lm6beta1se <- as.vector(summary(lm6)$coef[,2][2])
+qt3 <- qt(1-alpha/2, df=N3-K-1)
+ci3beta0 <- c(lm6beta0 - qt3 * lm6beta0se, lm6beta0 + qt3 * lm6beta0se)
+ci3beta0_sig3_alp2<- abs(ci3beta0[1]-ci3beta0[2])
+ci3beta1 <- c(lm6beta1 - qt3 * lm6beta1se, lm6beta1 + qt3 * lm6beta1se)
+ci3beta1_sig3_alp2<- abs(ci3beta1[1]-ci3beta1[2])
+
+# all.equal(as.vector(confint(lm6, 1)), ci3beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm6, 2)), ci3beta1) # TRUE means we calculated correctly
+
+
+alpha <- 0.01
+K <- 1
+
+# model 4
+lm4beta0 <- as.vector(summary(lm4)$coef[,1][1])
+lm4beta0se <- as.vector(summary(lm4)$coef[,2][1])
+lm4beta1 <- as.vector(summary(lm4)$coef[,1][2])
+lm4beta1se <- as.vector(summary(lm4)$coef[,2][2])
+qt1 <- qt(1-alpha/2, df=N1-K-1)
+ci1beta0 <- c(lm4beta0 - qt1 * lm4beta0se, lm4beta0 + qt1 * lm4beta0se)
+ci1beta0_sig1_alp3<- abs(ci1beta0[1]-ci1beta0[2])
+ci1beta1 <- c(lm4beta1 - qt1 * lm4beta1se, lm4beta1 + qt1 * lm4beta1se)
+ci1beta1_sig1_alp3<- abs(ci1beta1[1]-ci1beta1[2])
+
+# all.equal(as.vector(confint(lm4, 1)), ci1beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm4, 2)), ci1beta1) # TRUE means we calculated correctly
+
+
+# model 5
+lm5beta0 <- as.vector(summary(lm5)$coef[,1][1])
+lm5beta0se <- as.vector(summary(lm5)$coef[,2][1])
+lm5beta1 <- as.vector(summary(lm5)$coef[,1][2])
+lm5beta1se <- as.vector(summary(lm5)$coef[,2][2])
+qt2 <- qt(1-alpha/2, df=N2-K-1)
+ci2beta0 <- c(lm5beta0 - qt2 * lm5beta0se, lm5beta0 + qt2 * lm5beta0se)
+ci2beta0_sig2_alp3<- abs(ci2beta0[1]-ci2beta0[2])
+ci2beta1 <- c(lm5beta1 - qt2 * lm5beta1se, lm5beta1 + qt2 * lm5beta1se)
+ci2beta1_sig2_alp3<- abs(ci2beta1[1]-ci2beta1[2])
+
+# all.equal(as.vector(confint(lm5, 1)), ci2beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm5, 2)), ci2beta1) # TRUE means we calculated correctly
+
+
+# model 6
+lm6beta0 <- as.vector(summary(lm6)$coef[,1][1])
+lm6beta0se <- as.vector(summary(lm6)$coef[,2][1])
+lm6beta1 <- as.vector(summary(lm6)$coef[,1][2])
+lm6beta1se <- as.vector(summary(lm6)$coef[,2][2])
+qt3 <- qt(1-alpha/2, df=N3-K-1)
+ci3beta0 <- c(lm6beta0 - qt3 * lm6beta0se, lm6beta0 + qt3 * lm6beta0se)
+ci3beta0_sig3_alp3<- abs(ci3beta0[1]-ci3beta0[2])
+ci3beta1 <- c(lm6beta1 - qt3 * lm6beta1se, lm6beta1 + qt3 * lm6beta1se)
+ci3beta1_sig3_alp3<- abs(ci3beta1[1]-ci3beta1[2])
+
+# all.equal(as.vector(confint(lm6, 1)), ci3beta0) # TRUE means we calculated correctly
+# all.equal(as.vector(confint(lm6, 2)), ci3beta1) # TRUE means we calculated correctly
+
+```
+
+
+```{r, echo=FALSE}
+b01 <- c(ci1beta0_sig1_alp1, ci1beta0_sig1_alp2, ci1beta0_sig1_alp3)
+b02 <- c(ci2beta0_sig2_alp1, ci2beta0_sig2_alp2, ci2beta0_sig2_alp3)
+b03 <- c(ci3beta0_sig3_alp1, ci3beta0_sig3_alp2, ci3beta0_sig3_alp3)
+MatrixB0 <- cbind(b01, b02, b03)
+
+alpha <- c(0.1, 0.05, 0.01)
+
+colnames (MatrixB0)<- sig
+rownames (MatrixB0) <- alpha
+
+c01 <- c(ci1beta1_sig1_alp1, ci1beta1_sig1_alp2, ci1beta1_sig1_alp3)
+c02 <- c(ci2beta1_sig2_alp1, ci2beta1_sig2_alp2, ci2beta1_sig2_alp3)
+c03 <- c(ci3beta1_sig3_alp1, ci3beta1_sig3_alp2, ci3beta1_sig3_alp3)
+
+MatrixC0 <-  cbind(c01, c02, c03)
+
+colnames (MatrixC0)<- var
+rownames (MatrixC0) <- alpha
+
+```
+
+The following table shows the absolute size of the confidence intervals for different significance levels of the 3 models. The first column shows the value for $\alpha$ and the table head shows the value for $\sigma^2$:
+
+```{r, results='asis', echo=FALSE}
+
+xtable(MatrixC0, digits=6)
+
+```
+
+If we increase the level of confidence e.g to 99%, then the confidence interval gets wider and if we decrease the level of confidence to e.g 90%, the confidence interval gets narrower. Therefore a 99% confidence interval is less precise/ uncertain. 
+If we increase the variance of the error term the confidence interval gets wider and less precise. If we decrease the error variance it is easier to predict the model, so the confidence interval gets narrower. 
+If we combine a high confidence level and increase the error term variance at the same time we get an even wider confidence interval.
+
