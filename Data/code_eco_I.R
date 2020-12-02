@@ -19,8 +19,8 @@ head(marketing)
 
 beta0 <- 0.2
 beta1 <- -1.8
-N <- 1000
-sigma <- .5
+N <- 100
+sigma <- 1
 
 # Generate random covariates
 x <- runif(N) + 1
@@ -45,7 +45,42 @@ for (i in 1:N) {
 }
 
 
+# Slide 39 ----------------------------------------------------------------
+
+
+n <- 100
+beta0tilde <- .2
+beta1 <- -1.8
+sigma <- sqrt(.01)
+
+x <- sort(runif(n) + 1)
+u <- rnorm(n, 0, sigma)
+yhat <- beta0tilde * x ^ beta1
+y <- yhat * exp(u)
+
+par(mfrow = c(1,2))
+plot(x, y, col = 2, pch = 16, xlab = "Price", ylab = "Demand",
+     ylim = c(0, 0.35), main = bquote(sigma^2 ~ "=" ~ .(sigma^2)))
+lines(x, yhat, lwd = 4)
+
+for (i in 1:n) {
+  lines(c(x[i], x[i]), c(yhat[i], y[i]))
+}
+
+plot(log(x), log(y), col = 2, pch = 16, xlab = "log(Price)",
+     ylab = "log(Demand)",
+     main = bquote(sigma^2 ~ "=" ~ .(sigma^2)))
+abline(log(beta0tilde), beta1, lwd = 4)
+
+for (i in 1:n) {
+  lines(log(c(x[i], x[i])), log(c(yhat[i], y[i])))
+}
+
+
+
 # Slide 67 ----------------------------------------------------------------
+
+par(mfrow = c(1,1))
 
 beta0 <- .2
 beta1 <- -1.8
@@ -88,7 +123,7 @@ sigma <- sqrt(.1)
 
 # Set two different sample sizes
 N <- 50
-N2 <- 4000
+N2 <- 400
 
 # This allows two plots to be displayed next to one another
 par(mfrow = c(1,2))
@@ -260,7 +295,7 @@ yield_lm2 <- lm(y ~ x1 + x2 + x3)
 summary(yield_lm2)
 # The parameter for x3 could not be estimated, due to perfect multicollinearity
 # Check what happens if you change the order of the covariates in R (e.g. lm(y ~ x3 + x2 + x1))
-lm(y ~ x3 + x2 + x1)
+
 
 # Slide 128 ---------------------------------------------------------------
 
@@ -297,11 +332,6 @@ abline(b = 1, a = 0, lty = 2, col = "grey")
 # How could you find the residuals from this plot?
 
 
-yresid <- chicken$consum - fit
-N <- length(yresid)
-for (i in 1:N) {
-  lines(c(fit[i], fit[i]), c(yresid[i], yresid[i]))
-}
 # Slide 134 ---------------------------------------------------------------
 
 # Use same model as slide 128 (above)
@@ -318,12 +348,38 @@ var_cov
 sqrt(diag(var_cov))
 
 
+# Slide 143 -----------------------------------------------------------
+
+n <- 100
+sigma <- sqrt(.1)
+sigmax <- sqrt(1)
+xbar <- 0
+b0 <- .2
+b1 <- -1.8
+b2 <- 0
+rho <- .7  # correlation of predictors
+
+xrange <- sqrt(12*sigmax^2)
+x1 <- runif(n, -xrange/2, xrange/2) + xbar
+tmp1 <- runif(n, -xrange/2, xrange/2) + xbar
+tmp2 <- rbinom(n, 1, rho)
+x2 <- x1*tmp2 + tmp1*(1-tmp2)
+
+y <- b0 + b1*x1 + b2*x2 + rnorm(n, 0, sigma)
+
+mod <- lm(y ~ x1 + x2)
+summary(mod)
+
+# Observe that the estimator for b2 is generally different from 0!
+
+
+
 # Slide 144/145 -----------------------------------------------------------
 
 # This code generates the plots as seen on slides 144/145
 set.seed(1)
 
-reps <- 50
+reps <- 200
 n <- 100
 sigma <- sqrt(.1)
 sigmax <- sqrt(1)
@@ -386,6 +442,7 @@ chick_lm <- lm(consum ~ income + pchick + pbeef + ppork, data = chicken)
 
 # summary() function automatically outputs t statistic and p-value
 sum <- summary(chick_lm)
+sum
 
 # They can be extracted with the following code
 t_vals <- summary(chick_lm)[["coefficients"]][, "t value"]
@@ -393,16 +450,79 @@ p_vals <- summary(chick_lm)[["coefficients"]][, "Pr(>|t|)"]
 t_vals
 p_vals
 
+# Slide 183/184 -----------------------------------------------------------
+marketing <- read.csv("marketing.csv")
+head(marketing)
+marketing_lm <- lm(rating ~ price + rq + ju + vo + wa + education + gender + income + age, marketing)
+summary(marketing_lm)
+
+# To use the command 'linearHypothesis' you must load the package 'car'
+library(car)
+f_test1 <- linearHypothesis(marketing_lm, c("gender = 0", "age = 0"))
+f_test1
+
+f_test2 <- linearHypothesis(marketing_lm, c("gender = 0", "age = 0", "price = 0"))
+f_test2
+
+# Now test if the effect of increasing price and increasing income is the same:
+f_test3 <- linearHypothesis(marketing_lm, c("price = income"))
+f_test3
+
+# You can also play around with this and even test other linear restrictions:
+f_test4 <- linearHypothesis(marketing_lm, c("2*price = income"))
+f_test4
+
+y <- rnorm(100)+2
+x1 <- rnorm(100)
+x2 <- rnorm(100)
+
+model <- lm(y~ x1 + x2)
+summary(model)
+
+model_reduced <- lm(y~1)
+summary(model_reduced)
+
+linearHypothesis(model, c("x1=0", "x2=0"))
+
+# Slide 209 ---------------------------------------------------------------
+
+# Load marketing data
+marketing <- read.csv("marketing.csv")
+head(marketing)
+
+marketing_lm <- lm(rating ~ rq + ju + vo + wa + price, marketing)
+summary(marketing_lm)
+
+linearHypothesis(marketing_lm, c("rq = vo"))
+
+marketing_lm2 <- lm(rating ~ kr + ju + vo + wa + price, marketing)
+summary(marketing_lm2)
+
+
+# What happens if all brands are included?
+marketing_lm_all <- lm(rating ~ rq + ju + vo + wa + kr + price, marketing)
+summary(marketing_lm_all)
+# How can this phenomenon be explained? --> Perfect multicollinearity
+
+# Now a model without an intercept
+marketing_lm_no_int <- lm(rating ~ 0 + rq + ju + vo + wa + kr + price, marketing)
+summary(marketing_lm_no_int)
+# Observe the change in the estimation of the coefficients and the different interpretation!
+
+
+
 
 # Slide 215 ---------------------------------------------------------------
 
 # This is the same data set and model as in the code for slide 95
 chicken <- read.csv("chicken.csv")
 chick_lm <- lm(consum ~ income + pchick + pbeef + ppork, data = chicken)
+summary(chick_lm)
 
 # Residuals are obtained throught the residuals() function
 resids <- residuals(chick_lm)
 resids
+plot(resids)
 
 # They can also be calculated manually
 # model.matrix extracts design matrix
@@ -415,11 +535,82 @@ resids_man <- chicken$consum - x %*% chick_lm$coefficients
 all.equal(resids, c(resids_man), check.attributes = FALSE)
 
 
-# Slide 229 ---------------------------------------------------------------
+
+# Slide 219 ---------------------------------------------------------------
+
+u <- rnorm(1000)
+u <- runif(1000,-1,1)
+hist(u, breaks = 10, xlab = "Normalverteilte Fehler", main = "")
+
+qqnorm(u)
+qqline(u)
+
+
+# Consider the same situation as on slide 107
+yieldus <- read.csv("yieldus.csv")
+# To bring notation in line with slides, create y, x1, x2 and x3
+y <- yieldus$Y3
+x1 <- yieldus$Y1
+x2 <- yieldus$Y60
+
+# Estimate model without spread
+yield_lm1 <- lm(y ~ x1 + x2)
+summary(yield_lm1)
+# All parameters estimated without hiccups!
+
+# Now have a look at the residuals
+resids <- residuals(yield_lm1)
+
+# Let's start with a histrogram
+dev.off()
+hist(resids, breaks = 30, xlab = "Residuals", main = "")
+# What does it look like? Does this resemble the shape of the density of a normal distribution?
+
+# Now a QQ-Plot
+qqnorm(resids)
+qqline(resids, col="red")
+# Do the dots lie on the line? At least approximately?
+
+
+# The Jarque-Bera test
+JB <- tseries::jarque.bera.test(resids)
+JB
+# Can we reject normality?
+
+
+
+# Now consider profits
+
+profit <- read.csv("profit.csv")
+profit_lm <- lm(GEW94 ~ GEW93 + UM94, profit[1:20, ])
+summary(profit_lm)
+resids <- residuals(profit_lm)
+
+# Let's start with a histrogram
+dev.off()
+hist(resids, breaks = 30, xlab = "Residuals", main = "")
+# What does it look like? Does this resemble the shape of the density of a normal distribution?
+
+# Now a QQ-Plot
+qqnorm(resids)
+qqline(resids, col="red")
+# Do the dots lie on the line? At least approximately?
+
+
+# The Jarque-Bera test
+JB <- tseries::jarque.bera.test(resids)
+JB
+# Can we reject normality?
+
+
+
+
+# Slide 228 ---------------------------------------------------------------
 
 
 profit <- read.csv("profit.csv")
 profit_lm <- lm(GEW94 ~ GEW93, profit)
+summary(profit_lm)
 
 par(mfrow = c(1, 2))
 # Plot GEW94 and 93 against each other
@@ -429,14 +620,14 @@ abline(profit_lm, lty=2)
 legend("topleft", legend=c("regression line"), lty=2)
 
 # Plot residuals against explanatory variable
-plot(residuals(profit_lm), profit$GEW94, ylab = "Residuals", xlab = "GEW93")
+plot(profit$GEW93, residuals(profit_lm), ylab = "Residuals", xlab = "GEW93")
 abline(0,0, lty=2)
 
 
 
 
 
-# Slide 228 ---------------------------------------------------------------
+# Slide 232 ---------------------------------------------------------------
 
 # Start with basic model
 profit <- read.csv("profit.csv")
@@ -447,9 +638,18 @@ summary(profit_lm)
 
 # Can also be calculated manually
 SSR <- sum(residuals(profit_lm)^2)
+SSR
 TSS <- sum((profit$GEW94 - mean(profit$GEW94))^2)
+TSS
 
 1 - SSR/TSS
+
+# Alternative way to calculate TSS
+profit_lm_0 <- lm(GEW94 ~ 1, profit)
+summary(profit_lm_0)
+sum(residuals(profit_lm_0)^2)
+
+
 
 # R^2 always goes down, when we add another predictor
 profit_lm2 <- lm(GEW94 ~ GEW93 + UM94, profit)
@@ -461,6 +661,8 @@ summary(profit_lm3)
 
 
 # Slide 233 ---------------------------------------------------------------
+
+chicken <- read.csv("chicken.csv")
 
 # We consider the log linear model.
 chick_lm1 <- lm(log(consum) ~ log(pchick), chicken)
@@ -516,29 +718,50 @@ cbind(SSRs, Rs, AICs, BICs)
 # Now we estimate another linear model
 
 chick_lm6 <- lm(consum ~ income + pchick, chicken)
+summary(chick_lm3)
+summary(chick_lm6)
 cbind(sum(residuals(chick_lm6)^2), summary(chick_lm6)$r.squared, AIC(chick_lm6), BIC(chick_lm6))
 
 # Transform AIC and BIC from log-linear scale to linear scale
 AIC(chick_lm3) + 2*sum(log(chicken$consum))
 BIC(chick_lm3) + 2*sum(log(chicken$consum))
 
+
+# Slide 255 -----------------------------------------------------------
+
+# I() tells the lm command to perform this calculation before estimation
+chicken_lm_quadratic <- lm(consum ~ income + pchick + I(pchick^2) + ppork + I(ppork^2), chicken)
+summary(chicken_lm_quadratic)
+
+AIC(chicken_lm_quadratic)
+BIC(chicken_lm_quadratic)
+
+chicken_lm_quadratic$coefficients
+
+-chicken_lm_quadratic$coefficients["pchick"]/(2*chicken_lm_quadratic$coefficients["I(pchick^2)"])
+-chicken_lm_quadratic$coefficients["ppork"]/(2*chicken_lm_quadratic$coefficients["I(ppork^2)"])
+
+
+
 # Slide 262/263 -----------------------------------------------------------
 
-chick_lm <- lm(consum ~ pchick + income * ppork, chicken)
-coefs <- chick_lm$coefficients
+chick_lm_interaction <- lm(consum ~ income + pchick + ppork + income:ppork, chicken)
+summary(chick_lm_interaction)
+coefs <- chick_lm_interaction$coefficients
 
-coefs["ppork"] + mean(chicken$income) * coefs["income:ppork"]
+coefs["pchick"] + mean(chicken$income) * coefs["income:ppork"]
 
 # I() tells the lm command to perform this calculation before estimation
 # This is equivalent to the following:
-chick_lm2 <- lm(consum ~ pchick + ppork + income + I(income - mean(income)) : I(ppork - mean(ppork)), chicken)
-chick_lm2$coefficients["ppork"]
+chick_lm_interaction2 <- lm(consum ~ pchick + ppork + income + I(income - mean(income)) : I(ppork - mean(ppork)), chicken)
+summary(chick_lm_interaction2)
+chick_lm_interaction2$coefficients["ppork"]
 
 
 # Slide 269 ---------------------------------------------------------------
 
 marketing <- read.csv("marketing.csv")
-marketing_lm <- lm(rating ~ kr*price, marketing)
+marketing_lm <- lm(rating ~ kr:price, marketing)
 
 summary(marketing_lm)
 marketing_lm$coefficients["price"] + marketing_lm$coefficients["kr:price"]
