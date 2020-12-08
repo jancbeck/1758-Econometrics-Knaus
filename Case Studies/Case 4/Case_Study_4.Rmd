@@ -1,0 +1,129 @@
+---
+title: "Case Study 4 - Group 4"
+author:
+- Annika Janson h11829506
+- Jan Beck h11814291
+- Franz Uchatzi h1451890
+date: "13.12.2020"
+output:
+  pdf_document: default
+  html_document:
+    df.print: paged
+header-includes:
+- \usepackage{dcolumn}
+- \renewcommand{\and}{\\}
+---
+
+
+```{r setup, include=FALSE}
+library(car)
+library(stargazer)
+library(xtable)
+library(extrafont)
+library(tseries)
+knitr::opts_chunk$set(warning = FALSE, echo = TRUE)
+marketing <- read.csv("marketing.csv")
+N <- nrow(marketing)
+```
+
+# 2 Model
+
+## 2.1 Model estimation
+
+### 2.1.1 and 2.1.2  
+
+```{r, echo=FALSE}
+marketing_lm1 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price, marketing)
+marketing_lm2 <- lm(rating ~ 0 + rq + vo + wa + kr + ju + education + gender + income + age  + price, marketing)
+```
+
+```{r, results='asis', echo=FALSE}
+stargazer(marketing_lm1, marketing_lm2, header=FALSE, align=TRUE, title="Model comparison")
+```
+
+
+*(See page 2 for model comparison and regression output.)*
+
+The R^2^ value of model 1 and 2 is __0.348__ and __0.828__ respectively. 
+
+The estimates and standard errors for the non-brand explanatory variables of model 1 and 2 are identical.
+
+The estimates for `rq`, `vo`, `wa`, `ju`/intercept, `education`, `income`, `age` and `price` are significant at the 5%-level.
+
+### 2.2 
+
+__Model 1__: the estimate for `kr` is __-0.287950__, which means that on average the rating is changing by __-0.2887950__ c.p. In other words, we shift the regression line down by 0.2887950.
+
+__Model 2__: the estimate for `kr` is __20.560087__, this is the intercept for `kr`. On average, if the brand kr and all other variables were 0, the rating would be __20.560087__ c.p.
+
+### 2.3
+
+We can calculate the regression parameter associated with `kr` in Model 1 by subtracting the value of `ju` in Model 2 from the value of `kr` in Model 2. 
+
+This is because `ju` was our reference group, so the intercept of Model 1 is equivalent to the intercept of `ju`, which is also shown in Model 2. Model 1 shows us the difference between choosing "kr" or any other group and Model 2 shows us each groups intercept. 
+
+\newpage
+
+### 2.4 
+
+H0: $\beta_{wa} = 0$  
+H1: $\beta_{wa} \neq 0$ 
+
+In model 1, the p-value for $\beta_{wa}$ is __0.05641__. Therefore, at the $\alpha=0.05$, we can not reject the null hypothesis. We conclude, that there is no difference in the average rating between the brands `ju` and `wa` c.p.
+
+Bonus question: 
+
+```{r, echo=FALSE}
+linearHypothesis(marketing_lm2, c("wa=ju")) 
+```
+
+The linear hypothesis shows that the p-value again is __0.05641__, which is exactly the p-value we expected, as it was the one we could see in the results of `wa` in Model 1. 
+
+### 2.5 
+#### 2.5.1
+
+#### 2.5.2
+
+### 2.6
+
+```{r, echo=FALSE}
+
+resids <- residuals(marketing_lm1)
+
+x <- model.matrix(marketing_lm1)
+
+resids_man <- marketing$rating - x %% marketing_lm1$coefficients
+all.equal( resids, c(resids_man), check.attributes = FALSE) ## Numeric lengths differ?
+
+
+## Histogram residuals
+
+
+hist(resids, breaks= 40, xlab = "Residuals", main= "")
+
+## QQplot
+
+y <- marketing$rating
+x1 <- marketing$price
+x2 <- marketing$rq
+x3 <- marketing$vo
+x4 <- marketing$wa
+x5 <- marketing$kr
+x6 <- marketing$education
+x7 <- marketing$gender
+x8 <- marketing$income
+x9 <- marketing$age
+
+
+summary(marketing_lm1)
+qqnorm(resids)
+qqline(resids, col= "green")
+
+## Jarque bera test
+
+JB <- tseries::jarque.bera.test(resids)
+JB
+
+```
+
+Histogramm: Looking at the Histogramm, it seems that the residuals are not normally distributet, as they are located around 
