@@ -84,7 +84,7 @@ The linear hypothesis shows that the p-value again is __0.05641__, which is exac
 
 ```{r, echo=FALSE}
 
-brand_test1 <- linearHypothesis(marketing_lm, c("rq=0", "vo=0", "wa=0", "kr=0")) 
+brand_test1 <- linearHypothesis(marketing_lm1, c("rq=0", "vo=0", "wa=0", "kr=0")) 
 
 brand_test1.p <- brand_test1$`Pr(>F)`[2]
 brand_test1.F <- brand_test1$F[2]
@@ -130,17 +130,17 @@ We find little evidence in the data that we should reject the null hypothesis th
 # marketing_lm2
 marketing_lm3 <- lm(rating ~ education + gender + income + age + price, marketing)
 
-r2_1 <- summary(marketing_lm)$r.squared
-adj.r2_1 <- summary(marketing_lm)$adj.r.squared
+r2_1 <- summary(marketing_lm1)$r.squared
+adj.r2_1 <- summary(marketing_lm1)$adj.r.squared
 r2_1.percent <- round((r2_1*100), digits=4)
 r2_3 <- summary(marketing_lm3)$r.squared
-adj.r2_3 <- summary(marketing_lm)$adj.r.squared
+adj.r2_3 <- summary(marketing_lm1)$adj.r.squared
 r2_3.percent <- round((r2_3*100), digits=4)
 
-aic_lm1 <- AIC(marketing_lm)
+aic_lm1 <- AIC(marketing_lm1)
 aic_lm3 <- AIC(marketing_lm3)
 
-bic_lm1 <- BIC(marketing_lm)
+bic_lm1 <- BIC(marketing_lm1)
 bic_lm3 <- BIC(marketing_lm3)
 
 x_2.5.2 <- c(r2_1, adj.r2_1, aic_lm1, bic_lm1, r2_3, adj.r2_3, aic_lm3, bic_lm3)
@@ -299,7 +299,7 @@ The matrix shows the incorporation of each interaction between a pair of selecte
 ```{r, echo=FALSE}
 
 marketing_lm4 <- marketing_lm2.7_3
-summary(maketing_lm4)
+summary(marketing_lm4)
 
 ```
 #### 2.8.2 
@@ -325,9 +325,9 @@ summary(model1)
 
 
 ```
-The adjusted R^2 in comparison, is taking in to account how good the new variable is. So the $R^2adj$ is only increasing, if the change in $R^2$ is large. 
+The adjusted R^2 in comparison, is taking in to account how good the new variable is. So the $ R^2adj $ is only increasing, if the change in R^^2 is large. 
 
-The formula: $ R^2adj = 1 - \frac {N-1}  {N-K-1}* (1-R^2) $ So with increasing "K", the term 1 $ \frac {N-1}{N-K-1}$ gets bigger and $R^2adj$ smaller, but with the term $(1-R^2)$ it is still increasing if the change is large.  
+The formula: $R^2_{adj} = 1 - \frac{N-1}{N-K-1} * (1-R^2)$ So with increasing "K", the term 1 $\frac{N-1}{N-K-1}$ gets bigger and $R^2adj$ smaller, but with the term $(1-R^2)$ it is still increasing if the change is large.  
 
 ### 3.2
 
