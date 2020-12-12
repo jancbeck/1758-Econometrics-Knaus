@@ -44,7 +44,7 @@ stargazer(marketing_lm1, marketing_lm2, header=FALSE, align=TRUE, title="Model c
 
 *(See page 2 for model comparison and regression output.)*
 
-The R^2^ value of model 1 and 2 is __0.348__ and __0.828__ respectively. 
+The R^2 value of model 1 and 2 is __0.348__ and __0.828__ respectively. 
 
 The estimates and standard errors for the non-brand explanatory variables of model 1 and 2 are identical.
 
@@ -58,7 +58,7 @@ __Model 2__: the estimate for `kr` is __20.560087__, this is the intercept for `
 
 ### 2.3
 
-We can calculate the regression parameter associated with `kr` in Model 1 by subtracting the value of `ju` in Model 2 from the value of `kr` in Model 2. 
+We can calculate the regression parameter associated with `kr` in Model 1 by subtracting the value of `ju` in Model 2 from the value of `kr`in Model 2. 
 
 This is because `ju` was our reference group, so the intercept of Model 1 is equivalent to the intercept of `ju`, which is also shown in Model 2. Model 1 shows us the difference between choosing "kr" or any other group and Model 2 shows us each groups intercept. 
 
@@ -66,7 +66,7 @@ This is because `ju` was our reference group, so the intercept of Model 1 is equ
 
 ### 2.4 
 
-H0: $\beta_{wa} = 0$  
+H0: $\beta_{wa} = 0$ 
 H1: $\beta_{wa} \neq 0$ 
 
 In model 1, the p-value for $\beta_{wa}$ is __0.05641__. Therefore, at the $\alpha=0.05$, we can not reject the null hypothesis. We conclude, that there is no difference in the average rating between the brands `ju` and `wa` c.p.
@@ -82,7 +82,87 @@ The linear hypothesis shows that the p-value again is __0.05641__, which is exac
 ### 2.5 
 #### 2.5.1
 
+```{r, echo=FALSE}
+
+brand_test1 <- linearHypothesis(marketing_lm, c("rq=0", "vo=0", "wa=0", "kr=0")) 
+
+brand_test1.p <- brand_test1$`Pr(>F)`[2]
+brand_test1.F <- brand_test1$F[2]
+brand_test1
+```
+
+To check whether the brand information is helpful to determine the rating of mineral water, we perform a linear hypothesis test for Model 1 with the following H0 and H1. However, we need to exclude the variable "ju" as it works as the baseline for the brand effect in model 1.
+
+H0: $H_0: \beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$ 
+H1: $H_1: H_0\ \text{is not true.}$
+
+We run a linear hypothesis test and find that the p-value is __`r brand_test1.p`__ and the F-statistic is __`r brand_test1.F`__. 
+We find little evidence in the data that we should reject the null hypothesis that the coefficients for `rq`, `vo`, `wa` and `kr` are equal to 0 and therefore can be jointly excluded from the model, c.p.
+
+
+Bonus question:
+```{r, echo=FALSE}
+
+brand_test2 <- linearHypothesis(marketing_lm2, c("rq=0", "ju=0", "vo=0", "wa=0", "kr=0"))
+
+brand_test2.p <- brand_test2$`Pr(>F)`[2]
+brand_test2.F <- brand_test2$F[2]
+brand_test2
+brand_test2.p
+brand_test2.F
+
+# not sure if the p-value is derived correctly, since it is exactly zero
+```
+For the bonus question, we take same approach as for Model 1 with the difference that now, all brands of mineral water are included in the H0. In Model 2 the intercept $\beta_{0}$ is excluded. 
+
+H0: $H_0: \beta_{ju}=\beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$ 
+H1: $H_1: H_0\ \text{is not true.}$
+
+We run a linear hypothesis test and find that the p-value is __`r brand_test2.p`__ and the F-statistic is __`r brand_test2.F`__. 
+We find little evidence in the data that we should reject the null hypothesis that the coefficients for `ju`, `rq`, `vo`, `wa` and `kr` are equal to 0 and therefore can be jointly excluded from the model, c.p.
+
+
 #### 2.5.2
+
+```{r, echo=FALSE}
+
+# maketing_lm
+# marketing_lm2
+marketing_lm3 <- lm(rating ~ education + gender + income + age + price, marketing)
+
+r2_1 <- summary(marketing_lm)$r.squared
+adj.r2_1 <- summary(marketing_lm)$adj.r.squared
+r2_1.percent <- round((r2_1*100), digits=4)
+r2_3 <- summary(marketing_lm3)$r.squared
+adj.r2_3 <- summary(marketing_lm)$adj.r.squared
+r2_3.percent <- round((r2_3*100), digits=4)
+
+aic_lm1 <- AIC(marketing_lm)
+aic_lm3 <- AIC(marketing_lm3)
+
+bic_lm1 <- BIC(marketing_lm)
+bic_lm3 <- BIC(marketing_lm3)
+
+x_2.5.2 <- c(r2_1, adj.r2_1, aic_lm1, bic_lm1, r2_3, adj.r2_3, aic_lm3, bic_lm3)
+m_2.5.2 <- matrix(data=x_2.5.2, nrow=2, ncol=4, byrow=TRUE)
+rownames(m_2.5.2) <- c("Model 1", "Model 3")
+colnames(m_2.5.2) <- c("R-squared", "Adj. R-squared", "AIC", "BIC")
+
+m_2.5.2
+dif_r2 <- r2_1-r2_3
+dif_r2_percent <- round((dif_r2*100), digits=4)
+dif_adj_r2 <- adj.r2_1 - adj.r2_3
+dif_aic <- aic_lm3 - aic_lm1
+dif_bic <- bic_lm3 - bic_lm1
+
+```
+
+The matrix shows different values for model selection criteria for model 1 and model 3, which is a reduced version of model 1 in terms of explanatory variables of the mineral water brands. We can see that R-squared of model 1 is __`r dif_r2`__ higher than for model 3, suggesting that model one explains __`r dif_r2_percent`__ percent more variation in rating can be explained with variation of the independent variables, altough, the percentage increase for each variable is comparatively low. Furthermore, model 1 consists of five more explanatory variables than model 3 and R-squared has the property to increase for each additionally explanatory variable added to the model. 
+
+Therefore, we take a look at the adjusted R-squared, which is the same value for model 1 and model 3 respectively with __`r adj.r2_1`__ . This result shows that the percentage increase of R-squared in model 1 is expected to be by chance and that adding the variables of mineral water brands does not actually increase the model fit.
+
+If we compare the AIC and BIC values for each model we see that for model 1 the AIC is __`r dif_aic`__ and the BIC is __`r dif_bic`__ units smaller than for model 3. The smaller AIC and BIC values of model 1 indicate a better fit of the model in comparison to model 3. As a result, we find that model 1 explains a change in rating better than model 3.
+
 
 ### 2.6
 
@@ -93,10 +173,10 @@ resids <- residuals(marketing_lm1)
 x <- model.matrix(marketing_lm1)
 
 resids_man <- marketing$rating - x %*% marketing_lm1$coefficients
-all.equal( resids, c(resids_man), check.attributes = FALSE) ## Numeric lengths differ?
+all.equal( resids, c(resids_man), check.attributes = FALSE) 
 
 
-## Histogram residuals
+## Histogramm residuals
 
 
 hist(resids, breaks= 40, xlab = "Residuals", main= "")
@@ -125,5 +205,151 @@ JB <- tseries::jarque.bera.test(resids)
 JB
 
 ```
+H0: Residuals are normally distributed
+H1: Residuals are not normally distributed
 
-Histogramm: Looking at the Histogramm, it seems that the residuals are not normally distributet, as they are located around 
+Histogramm: Looking at the Histogramm, it does not look like a symmetric distribution around 0.  it seems that the residuals are not normally distributed, as they are located around 1.5 and not around 0. And they have outliners on both sides which they do ot have not the other side. 
+
+QQ-Plot: Till 1.5 it seems the reisduals follow a normal distribution. But for values higher than 1.5, they seem to differ from normal distribution. 
+
+Jarque- Bera- Test: The Jarque-Bera Test confirms our observations from the Histogramm and the QQ-Plot. With X-squared = __36.525__ it is bigger than __6__, which is the limit. Additional the p-value is __1.172e-08__, so very small. At a 95% confidence level, the p-value of "J" is smaller than 0.05 and we reject the H0. 
+
+Summarising our observations, our error term is not normaly distributed, we have a problem with our model.
+
+### 2.7
+```{r, echo=FALSE}
+
+# marketing_lm <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price, marketing)
+
+marketing_lm2.7_1 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age , marketing)
+marketing_lm2.7_2 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age + vo:income, marketing)
+marketing_lm2.7_3 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age + vo:income + wa:price, marketing)
+
+# summary(marketing_lm)
+# summary(marketing_lm2.7_1) # kr:age
+# summary(marketing_lm2.7_2) # kr:age, vo:income
+# summary(marketing_lm2.7_3) # kr:age, vo:income, wa:price
+
+
+
+```
+
+We add interactions between dummy variables and continuous explanatory variables in three steps. First, the interaction between `kr` and `age`. Second, between the variables `vo` and `income`. The last interaction added is between the variables `wa` and `price`. The results betwwen each step are shown in 2.8.
+
+### 2.8
+
+```{r, echo=FALSE}
+
+# r2_1
+r2_2.8_1 <- summary(marketing_lm2.7_1)$r.squared # kr:age R2
+r2_2.8_2 <- summary(marketing_lm2.7_2)$r.squared # kr:age, vo:income
+r2_2.8_3 <- summary(marketing_lm2.7_3)$r.squared # kr:age, vo:income, wa:price
+
+# adj.r2_1
+adjr2_2.8_1 <- summary(marketing_lm2.7_1)$adj.r.squared
+adjr2_2.8_2 <- summary(marketing_lm2.7_2)$adj.r.squared
+adjr3_2.8_3 <- summary(marketing_lm2.7_3)$adj.r.squared
+
+# aic_lm1
+aic_2.8_1 <- AIC(marketing_lm2.7_1)
+aic_2.8_2 <- AIC(marketing_lm2.7_2)
+aic_2.8_3 <- AIC(marketing_lm2.7_3)
+
+# bic_lm1
+bic_2.8_1 <- BIC(marketing_lm2.7_1)
+bic_2.8_2 <- BIC(marketing_lm2.7_2)
+bic_2.8_3 <- BIC(marketing_lm2.7_3)
+
+Rs <- c(r2_1,
+        r2_2.8_1,
+        r2_2.8_2,
+        r2_2.8_3)
+
+adjRs <- c(adj.r2_1,
+        adjr2_2.8_1,
+        adjr2_2.8_2,
+        adjr3_2.8_3)
+
+aics <- c(aic_lm1,
+        aic_2.8_1,
+        aic_2.8_2,
+        aic_2.8_3)
+
+bics <- c(bic_lm1,
+        bic_2.8_1,
+        bic_2.8_2,
+        bic_2.8_3)
+
+x_2.8 <- c(Rs, adjRs, aics, bics)
+m_2.8 <- matrix(data=x_2.8, nrow=4, ncol=4)
+rownames(m_2.8) <- c("Model 1", "Step1 (kr:age)", "Step2 (vo:income)", "Step3 (wa:price)")
+colnames(m_2.8) <- c("R-squared", "Adj. R-squared", "AIC", "BIC")
+
+m_2.8
+
+
+
+
+```
+
+The matrix shows the incorporation of each interaction between a pair of selected variables and the effect on R-squared, adjusted R-squared, AIC and BIC. As a reference we compare each change in the parameters with the respective parameters of model 1.
+
+#### 2.8.1
+
+```{r, echo=FALSE}
+
+marketing_lm4 <- marketing_lm2.7_3
+summary(maketing_lm4)
+
+```
+#### 2.8.2 
+
+### 2.9
+
+# 3 Theorie
+
+
+### 3.1 
+
+That is true. $R^2$ is always increasing with each additional variable, no matter how good the new variable is. In general SSR are always smaller than TSS, and $R^2$ is close to 1 the smaller SSR is.  If SSR = 0, then $R^2 = 1$. In this case we don't make any errors and were able to explain the variance of our model completely. In a model with a fixed number of observations N, $R^2$ will be always 1 if we add N-1 explanatory variables, no matter how useful they are. 
+
+For example: 
+
+```{r, echo=FALSE} 
+chick <- read.csv("chicken.csv")
+chick1 <- chick[c(1:5), c(1:5)]
+model1 <- lm(log(consum) ~ log(income) + log(pchick) + log(pbeef) + log(ppork), data=chick1)
+summary(model1)
+
+# Only the first 5 observations, so we have N-1 explanatory variables.
+
+
+```
+The adjusted R^2 in comparison, is taking in to account how good the new variable is. So the $R^2adj$ is only increasing, if the change in $R^2$ is large. 
+
+The formula: $ R^2adj = 1 - \frac {N-1}  {N-K-1}* (1-R^2) $ So with increasing "K", the term 1 $ \frac {N-1}{N-K-1}$ gets bigger and $R^2adj$ smaller, but with the term $(1-R^2)$ it is still increasing if the change is large.  
+
+### 3.2
+
+We consider the model $ Y= \beta_0 + \beta_1X + \beta_2X^2 + u $ 
+
+The null hypothesis for a statistical test that the point where the effect of a marginal increase in X on the conditional expectation E(Y |X) changes its sign is 1: 
+
+H0: $\beta_2= 0$
+H1: $\beta_2 ≠ 0$
+We can use a t-test, to test if we should include quadratic part of the function or not. If $\beta_0 ≠ 0$ non-linearity is given in our model and we should not exclude the quaratic term. 
+
+We are looking for the point where the marginal increase in X on the conditional expectation E(Y| X= 1)= 0. H0: 1= -\beta_1/(2\beta_2)
+
+We can calculate the point where the signs change with $X_0 = -\beta_1/(2\beta_2)$. If $\beta_1 \ and\ \beta_2$ have different signs, the vertex can be positive. So only for different signs of $\beta_1 \ and\ \beta_2$ the vertex can be 1. In our case this is true if we set $ X_0= 1, \ so \ -\beta_1/(2\beta_2) = 1$ 
+So If X<1, there is a positive effect on increasing X, if, X>1, there is a negative effect on increasing X.
+
+??? Welcher Test
+
+
+
+
+### 3.3 
+
+
+
