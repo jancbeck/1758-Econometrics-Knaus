@@ -331,17 +331,17 @@ The formula: $R^2_{adj} = 1 - \frac{N-1}{N-K-1} * (1-R^2)$ So with increasing "K
 
 ### 3.2
 
-We consider the model $ Y= \beta_0 + \beta_1X + \beta_2X^2 + u $ 
+We consider the model $Y=\beta_0+\beta_1X+\beta_2X^2+u$ 
 
 The null hypothesis for a statistical test that the point where the effect of a marginal increase in X on the conditional expectation E(Y |X) changes its sign is 1: 
 
 H0: $\beta_2= 0$
-H1: $\beta_2 ≠ 0$
-We can use a t-test, to test if we should include quadratic part of the function or not. If $\beta_0 ≠ 0$ non-linearity is given in our model and we should not exclude the quaratic term. 
+H1: $\beta_2\neq0$
+We can use a t-test, to test if we should include quadratic part of the function or not. If $\beta_0\neq0$ non-linearity is given in our model and we should not exclude the quaratic term. 
 
-We are looking for the point where the marginal increase in X on the conditional expectation E(Y| X= 1)= 0. H0: 1= -\beta_1/(2\beta_2)
+We are looking for the point where the marginal increase in X on the conditional expectation $E(Y| X= 1)= 0. H0: 1= -\beta_1/(2\beta_2)$
 
-We can calculate the point where the signs change with $X_0 = -\beta_1/(2\beta_2)$. If $\beta_1 \ and\ \beta_2$ have different signs, the vertex can be positive. So only for different signs of $\beta_1 \ and\ \beta_2$ the vertex can be 1. In our case this is true if we set $ X_0= 1, \ so \ -\beta_1/(2\beta_2) = 1$ 
+We can calculate the point where the signs change with $X_0 = -\beta_1/(2\beta_2)$. If $\beta_1 \ and\ \beta_2$ have different signs, the vertex can be positive. So only for different signs of $\beta_1 \ and\ \beta_2$ the vertex can be 1. In our case this is true if we set $ X_0= 1$, so $-\beta_1/(2\beta_2)=1$ 
 So If X<1, there is a positive effect on increasing X, if, X>1, there is a negative effect on increasing X.
 
 ??? Welcher Test
