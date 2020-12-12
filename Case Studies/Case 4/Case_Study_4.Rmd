@@ -66,44 +66,58 @@ This is because `ju` was our reference group, so the intercept of Model 1 is equ
 
 ### 2.4 
 
-H0: $\beta_{wa} = 0$ 
+H0: $\beta_{wa} = 0$  
 H1: $\beta_{wa} \neq 0$ 
 
-In model 1, the p-value for $\beta_{wa}$ is __0.05641__. Therefore, at the $\alpha=0.05$, we can not reject the null hypothesis. We conclude, that there is no difference in the average rating between the brands `ju` and `wa` c.p.
+In model 1, the p-value for $\beta_{wa}$ is __0.05641__. Therefore, for  $\alpha=0.05$, we can not reject the null hypothesis. We conclude, that there is no difference in the average rating between the brands `ju` and `wa` c.p.
 
-Bonus question: 
+*Bonus question: *
 
 ```{r, echo=FALSE}
 linearHypothesis(marketing_lm2, c("wa=ju")) 
 ```
 
-The linear hypothesis shows that the p-value again is __0.05641__, which is exactly the p-value we expected, as it was the one we could see in the results of `wa` in Model 1. 
+The F-test shows that the p-value again is __0.05641__, which is exactly the p-value we expected, as it was the one we could see in the results of `wa` in Model 1. 
 
 ### 2.5 
 #### 2.5.1
 
+To check whether the brand information is helpful to determine the rating of mineral water, we perform an F-test for Model 1 with the following H0 and H1. However, we need to exclude the variable `ju` as it acts as the baseline for the brand effect in Model 1.
+
+H0: $\beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$  
+H1: $H_0\text{ is not true.}$
+
 ```{r, echo=FALSE}
 
 brand_test1 <- linearHypothesis(marketing_lm1, c("rq=0", "vo=0", "wa=0", "kr=0")) 
+
+
+```
+
+```{r, echo=FALSE}
 
 brand_test1.p <- brand_test1$`Pr(>F)`[2]
 brand_test1.F <- brand_test1$F[2]
 brand_test1
 ```
 
-To check whether the brand information is helpful to determine the rating of mineral water, we perform a linear hypothesis test for Model 1 with the following H0 and H1. However, we need to exclude the variable "ju" as it works as the baseline for the brand effect in model 1.
 
-H0: $H_0: \beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$ 
-H1: $H_1: H_0\ \text{is not true.}$
-
-We run a linear hypothesis test and find that the p-value is __`r brand_test1.p`__ and the F-statistic is __`r brand_test1.F`__. 
+After we run the test we find that the p-value is __`r brand_test1.p`__ and the F-statistic is __`r brand_test1.F`__.  
 We find little evidence in the data that we should reject the null hypothesis that the coefficients for `rq`, `vo`, `wa` and `kr` are equal to 0 and therefore can be jointly excluded from the model, c.p.
 
 
-Bonus question:
+*Bonus question:* For the bonus question, we take same approach as for Model 1 with the difference that now, all brands of mineral water are included in the H0. In Model 2 the intercept $\beta_{0}$ is excluded. 
+
+H0: $H_0: \beta_{ju}=\beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$  
+H1: $H_1: H_0\ \text{is not true.}$
+
 ```{r, echo=FALSE}
 
 brand_test2 <- linearHypothesis(marketing_lm2, c("rq=0", "ju=0", "vo=0", "wa=0", "kr=0"))
+brand_test2
+```
+
+```{r, include=FALSE}
 
 brand_test2.p <- brand_test2$`Pr(>F)`[2]
 brand_test2.F <- brand_test2$F[2]
@@ -113,12 +127,8 @@ brand_test2.F
 
 # not sure if the p-value is derived correctly, since it is exactly zero
 ```
-For the bonus question, we take same approach as for Model 1 with the difference that now, all brands of mineral water are included in the H0. In Model 2 the intercept $\beta_{0}$ is excluded. 
 
-H0: $H_0: \beta_{ju}=\beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$ 
-H1: $H_1: H_0\ \text{is not true.}$
-
-We run a linear hypothesis test and find that the p-value is __`r brand_test2.p`__ and the F-statistic is __`r brand_test2.F`__. 
+We run an F-test test and find that the p-value is __`r brand_test2.p`__ and the F-statistic is __`r brand_test2.F`__. 
 We find little evidence in the data that we should reject the null hypothesis that the coefficients for `ju`, `rq`, `vo`, `wa` and `kr` are equal to 0 and therefore can be jointly excluded from the model, c.p.
 
 
@@ -126,8 +136,6 @@ We find little evidence in the data that we should reject the null hypothesis th
 
 ```{r, echo=FALSE}
 
-# maketing_lm
-# marketing_lm2
 marketing_lm3 <- lm(rating ~ education + gender + income + age + price, marketing)
 
 r2_1 <- summary(marketing_lm1)$r.squared
@@ -143,12 +151,15 @@ aic_lm3 <- AIC(marketing_lm3)
 bic_lm1 <- BIC(marketing_lm1)
 bic_lm3 <- BIC(marketing_lm3)
 
-x_2.5.2 <- c(r2_1, adj.r2_1, aic_lm1, bic_lm1, r2_3, adj.r2_3, aic_lm3, bic_lm3)
-m_2.5.2 <- matrix(data=x_2.5.2, nrow=2, ncol=4, byrow=TRUE)
-rownames(m_2.5.2) <- c("Model 1", "Model 3")
-colnames(m_2.5.2) <- c("R-squared", "Adj. R-squared", "AIC", "BIC")
+K1 <- length(marketing_lm1$coefficients) -1
+K2 <- length(marketing_lm3$coefficients) -1
 
-m_2.5.2
+x_2.5.2 <- c(K1, r2_1, adj.r2_1, aic_lm1, bic_lm1, K2, r2_3, adj.r2_3, aic_lm3, bic_lm3)
+m_2.5.2 <- matrix(data=x_2.5.2, nrow=2, ncol=5, byrow=TRUE)
+rownames(m_2.5.2) <- c("Model 1", "Model 3")
+colnames(m_2.5.2) <- c("K", "R-squared", "Adj. R-squared", "AIC", "BIC")
+
+
 dif_r2 <- r2_1-r2_3
 dif_r2_percent <- round((dif_r2*100), digits=4)
 dif_adj_r2 <- adj.r2_1 - adj.r2_3
@@ -157,11 +168,17 @@ dif_bic <- bic_lm3 - bic_lm1
 
 ```
 
-The matrix shows different values for model selection criteria for model 1 and model 3, which is a reduced version of model 1 in terms of explanatory variables of the mineral water brands. We can see that R-squared of model 1 is __`r dif_r2`__ higher than for model 3, suggesting that model one explains __`r dif_r2_percent`__ percent more variation in rating can be explained with variation of the independent variables, altough, the percentage increase for each variable is comparatively low. Furthermore, model 1 consists of five more explanatory variables than model 3 and R-squared has the property to increase for each additionally explanatory variable added to the model. 
+For our Model 3, we remove all brand variables from Model 1.
 
-Therefore, we take a look at the adjusted R-squared, which is the same value for model 1 and model 3 respectively with __`r adj.r2_1`__ . This result shows that the percentage increase of R-squared in model 1 is expected to be by chance and that adding the variables of mineral water brands does not actually increase the model fit.
+```{r, results='asis', echo=FALSE}
+stargazer(m_2.5.2, header=FALSE, align=TRUE, title="Model comparison")
+```
 
-If we compare the AIC and BIC values for each model we see that for model 1 the AIC is __`r dif_aic`__ and the BIC is __`r dif_bic`__ units smaller than for model 3. The smaller AIC and BIC values of model 1 indicate a better fit of the model in comparison to model 3. As a result, we find that model 1 explains a change in rating better than model 3.
+The table above shows various model selection criteria for Model 1 and Model 3. We see that R-squared of Model 1 is __`r dif_r2`__ larger than for Model 3, suggesting that Model 1 explains __`r dif_r2_percent`__% more variation in rating can be explained with variation of the independent variables. However, Model 1 consists of 4 more explanatory variables than Model 3 and the R-squared increases for each additional explanatory variable added to the model. 
+
+We therefore look at the adjusted R-squared next, which penalizes extra variables added to the model. Its values is the same for Model 1 and Model 3 respectively with __`r adj.r2_1`__ . This criterion suggests, that adding the brand variables does not increase goodness of fit.
+
+Lastly, we compare the AIC and BIC values for each model and see that for Model 1 the AIC is __`r dif_aic`__ and the BIC is __`r dif_bic`__ units smaller than for model 3. The smaller AIC and BIC values of Model 1 indicate a better fit of the model in comparison to Model 3. By this criterion, Model 1 explains the changes in rating better than Model 3.
 
 
 ### 2.6
@@ -173,7 +190,7 @@ resids <- residuals(marketing_lm1)
 x <- model.matrix(marketing_lm1)
 
 resids_man <- marketing$rating - x %*% marketing_lm1$coefficients
-all.equal( resids, c(resids_man), check.attributes = FALSE) 
+#all.equal( resids, c(resids_man), check.attributes = FALSE) 
 
 
 ## Histogramm residuals
@@ -182,20 +199,6 @@ all.equal( resids, c(resids_man), check.attributes = FALSE)
 hist(resids, breaks= 40, xlab = "Residuals", main= "")
 
 ## QQplot
-
-y <- marketing$rating
-x1 <- marketing$price
-x2 <- marketing$rq
-x3 <- marketing$vo
-x4 <- marketing$wa
-x5 <- marketing$kr
-x6 <- marketing$education
-x7 <- marketing$gender
-x8 <- marketing$income
-x9 <- marketing$age
-
-
-summary(marketing_lm1)
 qqnorm(resids)
 qqline(resids, col= "green")
 
@@ -208,13 +211,13 @@ JB
 H0: Residuals are normally distributed
 H1: Residuals are not normally distributed
 
-Histogramm: Looking at the Histogramm, it does not look like a symmetric distribution around 0.  it seems that the residuals are not normally distributed, as they are located around 1.5 and not around 0. And they have outliners on both sides which they do ot have not the other side. 
+Histogram: Looking at the histogram, it does not look like a symmetric distribution around 0. It seems that the residuals are not normally distributed, as they are located around 1.5 and not around 0. And they have outliers on both sides which they do ot have not the other side. 
 
-QQ-Plot: Till 1.5 it seems the reisduals follow a normal distribution. But for values higher than 1.5, they seem to differ from normal distribution. 
+QQ-Plot: Till 1.5 it seems the residuals follow a normal distribution. But for values higher than 1.5, they seem to differ from normal distribution. 
 
-Jarque- Bera- Test: The Jarque-Bera Test confirms our observations from the Histogramm and the QQ-Plot. With X-squared = __36.525__ it is bigger than __6__, which is the limit. Additional the p-value is __1.172e-08__, so very small. At a 95% confidence level, the p-value of "J" is smaller than 0.05 and we reject the H0. 
+Jarque-Bera-Test: The test confirms our observations from the histogram and the QQ-Plot. With X-squared = __36.525__ it is bigger than __6__, which is the limit. Additional the p-value is __1.172e-08__, so very small. At a 5%-level, the residuals are not normally distributed and we reject the H0. 
 
-Summarising our observations, our error term is not normaly distributed, we have a problem with our model.
+Summarizing our observations, our error term is not normally distributed, we have a problem with our model.
 
 ### 2.7
 ```{r, echo=FALSE}
@@ -234,7 +237,7 @@ marketing_lm2.7_3 <- lm(rating ~ rq + vo + wa + kr + education + gender + income
 
 ```
 
-We add interactions between dummy variables and continuous explanatory variables in three steps. First, the interaction between `kr` and `age`. Second, between the variables `vo` and `income`. The last interaction added is between the variables `wa` and `price`. The results betwwen each step are shown in 2.8.
+We add interactions between dummy variables and continuous explanatory variables in three steps. First, the interaction between `kr` and `age`. Second, between the variables `vo` and `income`. The last interaction added is between the variables `wa` and `price`. The results between each step are shown in 2.8.
 
 ### 2.8
 
@@ -285,14 +288,17 @@ m_2.8 <- matrix(data=x_2.8, nrow=4, ncol=4)
 rownames(m_2.8) <- c("Model 1", "Step1 (kr:age)", "Step2 (vo:income)", "Step3 (wa:price)")
 colnames(m_2.8) <- c("R-squared", "Adj. R-squared", "AIC", "BIC")
 
-m_2.8
-
-
 
 
 ```
 
-The matrix shows the incorporation of each interaction between a pair of selected variables and the effect on R-squared, adjusted R-squared, AIC and BIC. As a reference we compare each change in the parameters with the respective parameters of model 1.
+```{r, results='asis', echo=FALSE}
+stargazer(m_2.8, align=TRUE, header=FALSE)
+```
+
+The table above shows the addition of each interaction between a pair of selected variables and the effect on R-squared, adjusted R-squared, AIC and BIC. As a reference we compare each change in the parameters with the respective parameters of Model 1.
+
+
 
 #### 2.8.1
 
