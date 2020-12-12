@@ -92,7 +92,7 @@ resids <- residuals(marketing_lm1)
 
 x <- model.matrix(marketing_lm1)
 
-resids_man <- marketing$rating - x %% marketing_lm1$coefficients
+resids_man <- marketing$rating - x %*% marketing_lm1$coefficients
 all.equal( resids, c(resids_man), check.attributes = FALSE) ## Numeric lengths differ?
 
 
