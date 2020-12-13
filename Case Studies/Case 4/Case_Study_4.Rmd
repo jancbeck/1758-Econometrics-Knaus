@@ -35,6 +35,7 @@ N <- nrow(marketing)
 ```{r, echo=FALSE}
 marketing_lm1 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price, marketing)
 marketing_lm2 <- lm(rating ~ 0 + rq + vo + wa + kr + ju + education + gender + income + age  + price, marketing)
+
 ```
 
 ```{r, results='asis', echo=FALSE}
@@ -338,28 +339,98 @@ The adjusted R^2 in comparison, is taking in to account how good the new variabl
 
 The formula: $R^2_{adj} = 1 - \frac{N-1}{N-K-1} * (1-R^2)$ So with increasing "K", the term 1 $\frac{N-1}{N-K-1}$ gets bigger and $R^2adj$ smaller, but with the term $(1-R^2)$ it is still increasing if the change is large.  
 
+
 ### 3.2
 
 We consider the model $Y=\beta_0+\beta_1X+\beta_2X^2+u$ 
 
-The null hypothesis for a statistical test that the point where the effect of a marginal increase in X on the conditional expectation E(Y |X) changes its sign is 1: 
+First, we should test if we should include the quadratic term or not:
 
-H0: $\beta_2= 0$  
+H0: $\beta_2=0$  
 H1: $\beta_2\neq0$
-We can use a t-test, to test if we should include the quadratic part of the function or not. If $\beta_0\neq0$ non-linearity is given in our model and we should not exclude the quadratic term. 
 
-We are looking for the point where the marginal increase in X on the conditional expectation $E(Y| X=1)= 0$. 
-H0: $1= -\beta_1/(2\beta_2)$
+We can use a t-test to that end. If $\beta_0\neq0$, non-linearity is given in our model and we should keep the quadratic term. 
 
-We can calculate the point where the signs change with $X_0 = -\beta_1/(2\beta_2)$. If $\beta_1 \ and\ \beta_2$ have different signs, the vertex can be positive. So only for different signs of $\beta_1 \ and\ \beta_2$ the vertex can be 1. In our case this is true if we set $ X_0= 1$, so $-\beta_1/(2\beta_2)=1$ 
+Next, to check whether the sign changes at 1 for X, we use following formula 
+
+$$
+\frac{\partial \mathbb{E}(Y \mid X=x)}{\partial x}=\beta_{1}+2 \beta_{2} x=0
+$$
+which yields that sign change  lies at 
+
+$$
+X_0=-\beta_1/(2\beta_2)
+$$
+
+Since we test for $X_0=1$, our null hypothesis is:
+
+$$
+\beta_1+2\beta_2=0\quad\text{or:}\quad\beta_2+\frac{\beta_1}{2}=0
+$$
+
+Only if $\beta_1$ and $\beta_2$ have different signs, the vertex can be positive, as in our case where $X_0=1$.
 
 
-??? Welcher Test
+We can test this using an F-test.
 
+\newpage
 
+### 3.3
 
+We simulate non-linear data where the sign change occurs at $X_0=1$ and plot the result:
 
-### 3.3 
+```{r} 
 
+set.seed(1)
 
+# our parameters
+N <- 200
+beta0 <- 50
+beta1 <- 3.5
+beta2 <- -beta1/2 # sign change at 1
+mu <- 0
+sigma <- 3
+minX = -4
+maxX = 6
 
+# our model 
+x <- runif(N, min = minX, max = maxX)
+u <- rnorm(N, sd = sigma, mean = mu)
+y <- beta0 + beta1*x + beta2*x^2 + u
+
+# plot data
+plot( x, y, xlim = c(minX, maxX) )
+abline(v=1, col="red")
+```
+\newpage
+
+Next, we try to estimate a model with a quadratic term
+
+```{r} 
+qm <- lm(y ~ x + I(x^2)) 
+summary(qm)
+
+```
+
+The regression output shows that the p-value of the quadratic term is very low (significant) and the adjusted R-squared is __0.943__ (the model fits the data well). 
+
+For comparison, we estimate a model without a quadratic term:
+
+```{r} 
+
+lm <- lm(y ~ x) 
+summary(lm)
+
+```
+
+The p-value of $\beta_1$ alone is now __0.758__ and the adjusted R-squared __-0.009225__. Therefore, keeping the quadratic term is a good idea.
+
+Lastly, we run an F-test to see if the hypothesis $\beta_1+2\beta_2=0$ holds:
+
+```{r} 
+
+linearHypothesis(qm, c("x+2*I(x^2)=0"))
+
+```
+
+From the F-test we obtain an F-statistic of __0.0128__ and a p-value of __0.9101__. Therefore, we find little evidence in the data that we should reject the hypothesis that the sign chance occurs at $X_0=1$.
