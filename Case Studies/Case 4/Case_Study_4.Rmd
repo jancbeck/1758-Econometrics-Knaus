@@ -211,7 +211,7 @@ JB
 H0: Residuals are normally distributed
 H1: Residuals are not normally distributed
 
-Histogram: Looking at the histogram, it does not look like a symmetric distribution around 0. It seems that the residuals are not normally distributed, as they are located around 1.5 and not around 0. And they have outliers on both sides which they do ot have not the other side. 
+Histogram: Looking at the histogram, it does not look like a symmetric distribution around 0. It seems that the residuals are not normally distributed, as they are located around 1.5 and not around 0. Additionally they have outliers on both sides.
 
 QQ-Plot: Till 1.5 it seems the residuals follow a normal distribution. But for values higher than 1.5, they seem to differ from normal distribution. 
 
@@ -331,7 +331,10 @@ summary(model1)
 
 
 ```
-The adjusted R^2 in comparison, is taking in to account how good the new variable is. So the $ R^2adj $ is only increasing, if the change in R^^2 is large. 
+We used the chicken data set to show that $R^2$ is increasing to 1, if we set the numbers of observations to explanatory variables + 1. We created a new data frame including all 4 explanatory variables (`income`, `pbeef`, `pchick`, `ppork`) and 5 observations. The result shows us the expected $R^2$ of 1.  
+
+
+The adjusted R^2 in comparison, is taking in to account how good the new variable is. So the $ R^2adj $ is only increasing, if the change in $R^2$ is large. 
 
 The formula: $R^2_{adj} = 1 - \frac{N-1}{N-K-1} * (1-R^2)$ So with increasing "K", the term 1 $\frac{N-1}{N-K-1}$ gets bigger and $R^2adj$ smaller, but with the term $(1-R^2)$ it is still increasing if the change is large.  
 
@@ -341,14 +344,15 @@ We consider the model $Y=\beta_0+\beta_1X+\beta_2X^2+u$
 
 The null hypothesis for a statistical test that the point where the effect of a marginal increase in X on the conditional expectation E(Y |X) changes its sign is 1: 
 
-H0: $\beta_2= 0$
+H0: $\beta_2= 0$  
 H1: $\beta_2\neq0$
-We can use a t-test, to test if we should include quadratic part of the function or not. If $\beta_0\neq0$ non-linearity is given in our model and we should not exclude the quaratic term. 
+We can use a t-test, to test if we should include the quadratic part of the function or not. If $\beta_0\neq0$ non-linearity is given in our model and we should not exclude the quadratic term. 
 
-We are looking for the point where the marginal increase in X on the conditional expectation $E(Y| X= 1)= 0. H0: 1= -\beta_1/(2\beta_2)$
+We are looking for the point where the marginal increase in X on the conditional expectation $E(Y| X=1)= 0$. 
+H0: $1= -\beta_1/(2\beta_2)$
 
 We can calculate the point where the signs change with $X_0 = -\beta_1/(2\beta_2)$. If $\beta_1 \ and\ \beta_2$ have different signs, the vertex can be positive. So only for different signs of $\beta_1 \ and\ \beta_2$ the vertex can be 1. In our case this is true if we set $ X_0= 1$, so $-\beta_1/(2\beta_2)=1$ 
-So If X<1, there is a positive effect on increasing X, if, X>1, there is a negative effect on increasing X.
+
 
 ??? Welcher Test
 
