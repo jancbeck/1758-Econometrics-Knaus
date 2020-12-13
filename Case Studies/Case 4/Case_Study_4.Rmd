@@ -104,13 +104,13 @@ brand_test1
 
 
 After we run the test we find that the p-value is __`r brand_test1.p`__ and the F-statistic is __`r brand_test1.F`__.  
-We find little evidence in the data that we should reject the null hypothesis that the coefficients for `rq`, `vo`, `wa` and `kr` are equal to 0 and therefore can be jointly excluded from the model, c.p.
+Therefore, we reject the null hypothesis that the coefficients for `rq`, `vo`, `wa` and `kr` are equal to 0 and should keep them in the model, c.p.
 
 
 *Bonus question:* For the bonus question, we take same approach as for Model 1 with the difference that now, all brands of mineral water are included in the H0. In Model 2 the intercept $\beta_{0}$ is excluded. 
 
-H0: $H_0: \beta_{ju}=\beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$  
-H1: $H_1: H_0\ \text{is not true.}$
+$H_0: \beta_{ju}=\beta_{rq}=\beta_{vo}=\beta_{wa}=\beta_{kr}=0$  
+$H_1: H_0\ \text{is not true.}$
 
 ```{r, echo=FALSE}
 
@@ -130,7 +130,7 @@ brand_test2.F
 ```
 
 We run an F-test test and find that the p-value is __`r brand_test2.p`__ and the F-statistic is __`r brand_test2.F`__. 
-We find little evidence in the data that we should reject the null hypothesis that the coefficients for `ju`, `rq`, `vo`, `wa` and `kr` are equal to 0 and therefore can be jointly excluded from the model, c.p.
+Therefore, we reject the null hypothesis that the coefficients for `ju`, `rq`, `vo`, `wa` and `kr` are equal to 0 and should keep them in the model, c.p.
 
 
 #### 2.5.2
@@ -212,7 +212,7 @@ JB
 H0: Residuals are normally distributed
 H1: Residuals are not normally distributed
 
-Histogram: Looking at the histogram, it does not look like a symmetric distribution around 0. It seems that the residuals are not normally distributed, as they are located around 1.5 and not around 0. Additionally they have outliers on both sides.
+Histogram: Looking at the histogram, it does not look like a symmetric normal distribution around 0. The distribution seems slightly left-skewed and there are less values at the center than we would expect for a normal distribution. 
 
 QQ-Plot: Till 1.5 it seems the residuals follow a normal distribution. But for values higher than 1.5, they seem to differ from normal distribution. 
 
@@ -226,8 +226,8 @@ Summarizing our observations, our error term is not normally distributed, we hav
 # marketing_lm <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price, marketing)
 
 marketing_lm2.7_1 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age , marketing)
-marketing_lm2.7_2 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age + vo:income, marketing)
-marketing_lm2.7_3 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age + vo:income + wa:price, marketing)
+# marketing_lm2.7_2 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age + vo:income, marketing)
+marketing_lm2.7_3 <- lm(rating ~ rq + vo + wa + kr + education + gender + income + age + price + kr:age + wa:price, marketing) #+ vo:income
 
 # summary(marketing_lm)
 # summary(marketing_lm2.7_1) # kr:age
@@ -238,7 +238,7 @@ marketing_lm2.7_3 <- lm(rating ~ rq + vo + wa + kr + education + gender + income
 
 ```
 
-We add interactions between dummy variables and continuous explanatory variables in three steps. First, the interaction between `kr` and `age`. Second, between the variables `vo` and `income`. The last interaction added is between the variables `wa` and `price`. The results between each step are shown in 2.8.
+We add interactions between dummy variables and continuous explanatory variables in two steps. First, the interaction between `kr` and `age`. Second, interaction added is between the variables `wa` and `price`. The results between each step are shown in 2.8.
 
 ### 2.8
 
@@ -246,49 +246,48 @@ We add interactions between dummy variables and continuous explanatory variables
 
 # r2_1
 r2_2.8_1 <- summary(marketing_lm2.7_1)$r.squared # kr:age R2
-r2_2.8_2 <- summary(marketing_lm2.7_2)$r.squared # kr:age, vo:income
+# r2_2.8_2 <- summary(marketing_lm2.7_2)$r.squared # kr:age, vo:income
 r2_2.8_3 <- summary(marketing_lm2.7_3)$r.squared # kr:age, vo:income, wa:price
 
 # adj.r2_1
 adjr2_2.8_1 <- summary(marketing_lm2.7_1)$adj.r.squared
-adjr2_2.8_2 <- summary(marketing_lm2.7_2)$adj.r.squared
+# adjr2_2.8_2 <- summary(marketing_lm2.7_2)$adj.r.squared
 adjr3_2.8_3 <- summary(marketing_lm2.7_3)$adj.r.squared
 
 # aic_lm1
 aic_2.8_1 <- AIC(marketing_lm2.7_1)
-aic_2.8_2 <- AIC(marketing_lm2.7_2)
+# aic_2.8_2 <- AIC(marketing_lm2.7_2)
 aic_2.8_3 <- AIC(marketing_lm2.7_3)
 
 # bic_lm1
 bic_2.8_1 <- BIC(marketing_lm2.7_1)
-bic_2.8_2 <- BIC(marketing_lm2.7_2)
+# bic_2.8_2 <- BIC(marketing_lm2.7_2)
 bic_2.8_3 <- BIC(marketing_lm2.7_3)
 
 Rs <- c(r2_1,
         r2_2.8_1,
-        r2_2.8_2,
-        r2_2.8_3)
+        
+        r2_2.8_3) #r2_2.8_2,
 
 adjRs <- c(adj.r2_1,
         adjr2_2.8_1,
-        adjr2_2.8_2,
-        adjr3_2.8_3)
+       
+        adjr3_2.8_3) # adjr2_2.8_2,
 
 aics <- c(aic_lm1,
         aic_2.8_1,
-        aic_2.8_2,
-        aic_2.8_3)
+       
+        aic_2.8_3) # aic_2.8_2,
 
 bics <- c(bic_lm1,
         bic_2.8_1,
-        bic_2.8_2,
-        bic_2.8_3)
+        
+        bic_2.8_3) # bic_2.8_2,
 
 x_2.8 <- c(Rs, adjRs, aics, bics)
-m_2.8 <- matrix(data=x_2.8, nrow=4, ncol=4)
-rownames(m_2.8) <- c("Model 1", "Step1 (kr:age)", "Step2 (vo:income)", "Step3 (wa:price)")
+m_2.8 <- matrix(data=x_2.8, nrow=3, ncol=4)
+rownames(m_2.8) <- c("Model 1", "Step1 (kr:age)", "Step2 (wa:price)") # ("Model 1", "Step1 (kr:age)", "Step2 (vo:income)", "Step3 (wa:price)")
 colnames(m_2.8) <- c("R-squared", "Adj. R-squared", "AIC", "BIC")
-
 
 
 ```
@@ -297,9 +296,70 @@ colnames(m_2.8) <- c("R-squared", "Adj. R-squared", "AIC", "BIC")
 stargazer(m_2.8, align=TRUE, header=FALSE)
 ```
 
-The table above shows the addition of each interaction between a pair of selected variables and the effect on R-squared, adjusted R-squared, AIC and BIC. As a reference we compare each change in the parameters with the respective parameters of Model 1.
+The table above shows the addition of each interaction between a pair of selected variables and the effect on R-squared, adjusted R-squared, AIC and BIC. As a reference we compare each change in the parameters with the respective parameters of Model 1. Furthermore, the next table shows the respective p-values as well as t-test results for each interaction term and step respectively.
 
 
+```{r, echo=FALSE}
+
+# p-values step 1 kr:age
+pvalue1 <- as.vector(summary(marketing_lm2.7_1)$coefficients[,4]) # saves the p-values as vector
+kr_age1 <- pvalue1[11]
+
+# p-values step 2 vo:income
+#pvalue2 <- as.vector(summary(marketing_lm2.7_2)$coefficients[,4]) # saves the p-values as vector
+#kr_age2 <- pvalue2[11]
+#vo_income2 <- pvalue2[12]
+
+# p-values step 3 wa:price
+pvalue3 <- as.vector(summary(marketing_lm2.7_3)$coefficients[,4]) # saves the p-values as vector
+kr_age3 <- pvalue3[11]
+# vo_income3 <- pvalue3[12]
+wa_price3 <- pvalue3[12]
+
+# t-test step 1 kr:age
+ttest_2.8_kr1 <- summary(marketing_lm2.7_1)[["coefficients"]][, "t value"][11]
+
+# t-test step 2 vo:income
+#ttest_2.8_kr2 <- summary(marketing_lm2.7_2)[["coefficients"]][, "t value"][11]
+#ttest_2.8_vo2 <- summary(marketing_lm2.7_2)[["coefficients"]][, "t value"][12]
+#ttest_2.8_wa3 <- summary(marketing_lm2.7_2)[["coefficients"]][, "t value"][12]
+
+# t-test step 3 wa:price
+ ttest_2.8_kr3 <- summary(marketing_lm2.7_3)[["coefficients"]][, "t value"][11]
+# ttest_2.8_vo3 <- summary(marketing_lm2.7_3)[["coefficients"]][, "t value"][12]
+ ttest_2.8_wa3 <- summary(marketing_lm2.7_3)[["coefficients"]][, "t value"][12]
+
+
+# p-values
+pvalues1 <-  c(kr_age1)
+pvalues2 <- c(kr_age3,
+              wa_price3) 
+#vo_income2
+#pvalues3 <- c(kr_age3,
+             # vo_income3)
+              
+# t-test values
+ttests1 <- c(ttest_2.8_kr1)
+ttests2 <- c(ttest_2.8_kr3,
+             ttest_2.8_wa3)
+              
+#ttest_2.8_vo2
+# ttests3 <- c(ttest_2.8_kr3,
+           # ttest_2.8_vo3,
+            # ttest_2.8_wa3)
+            
+x_2.8_tests <- c(pvalues1, pvalues2,  ttests1, ttests2) #, ttests3 pvalues3,
+m_2.8_tests <- matrix(data=x_2.8_tests, nrow=2, ncol=4)
+rownames(m_2.8_tests) <- c("Step1 (kr:age)", "Step2 (wa:price)") # "Step2 (vo:income)", "Step3 (wa:price)")
+colnames(m_2.8_tests) <- c("p-values (1)", "p-values (2)", "t-test (1)", "t-test (2)") #("p-values (1)", "p-values (2)", "p-values (3)", "t-test (1)", "t-test (2)", "t-test (3)")
+
+```
+
+```{r, results='asis', echo=FALSE}
+stargazer(m_2.8_tests, align=TRUE, header=FALSE)
+```
+
+\newpage
 
 #### 2.8.1
 
@@ -309,9 +369,45 @@ marketing_lm4 <- marketing_lm2.7_3
 summary(marketing_lm4)
 
 ```
+
+
 #### 2.8.2 
 
+We interpret the interaction term between `kr` and `age`. The estimated coefficient in our model for the interaction term is __0.003347__. This means, that for every additional year a consumer would rate the mineral water of brand `kr` on average __0.003347__ higher. This could be the result of a marketing strategy that primarily targets older consumers.
+
+It's important to note that this additional effect only applies to mineral waters of the brand `kr`. `age` and brand `kr` still have separate effects on the average rating, therefore we can not say "all else equal" in respect to the interaction.
+
 ### 2.9
+
+From the output in 2.8.1 and Table 3 we can see that the two interaction terms we added are not significant at the 5%-level and did not increase goodness of fit by any measure. We therefore drop these terms and return to Model 1 and inspect and p-values of the included terms.
+
+```{r, echo=FALSE}
+summary(marketing_lm1)
+```
+
+Since `gender` has the highest p-value of the remaining variables, we drop it from the model next. 
+
+```{r, echo=FALSE}
+
+marketing_lm1_a <- lm(rating ~ rq + vo + wa + kr + education + income + age + price, marketing)
+
+summary(marketing_lm1_a)
+
+```
+\newpage
+Finally, we remove `education`:
+
+```{r, echo=FALSE}
+
+marketing_lm1_b <- lm(rating ~ rq + vo + wa + kr + income + age + price, marketing)
+
+summary(marketing_lm1_b)
+
+```
+
+The final improved model has a BIC of `r BIC(marketing_lm1_b)` (recall that the BIC from Model 4, with which we started, was `r BIC(marketing_lm4)`). We have therefore improved goodness of fit even though we dropped 4 variables in the process. The variables that we kept are all significant at the 5%-level except for `wa` and `kr`.
+
+\newpage
 
 # 3 Theorie
 
@@ -339,7 +435,7 @@ The adjusted R^2 in comparison, is taking in to account how good the new variabl
 
 The formula: $R^2_{adj} = 1 - \frac{N-1}{N-K-1} * (1-R^2)$ So with increasing "K", the term 1 $\frac{N-1}{N-K-1}$ gets bigger and $R^2adj$ smaller, but with the term $(1-R^2)$ it is still increasing if the change is large.  
 
-
+\newpage
 ### 3.2
 
 We consider the model $Y=\beta_0+\beta_1X+\beta_2X^2+u$ 
@@ -351,7 +447,7 @@ H1: $\beta_2\neq0$
 
 We can use a t-test to that end. If $\beta_0\neq0$, non-linearity is given in our model and we should keep the quadratic term. 
 
-Next, to check whether the sign changes at 1 for X, we use following formula 
+Next, to check whether the sign changes at 1 for X, we use the following formula 
 
 $$
 \frac{\partial \mathbb{E}(Y \mid X=x)}{\partial x}=\beta_{1}+2 \beta_{2} x=0
